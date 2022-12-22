@@ -35,7 +35,7 @@ public class CubeGridEditor : MonoBehaviour
         {
             ChangeCurrentCell(currentX - 1, currentY, currentZ);
         }
-        else if (Input.GetKeyDown(KeyCode.R))
+        else if (Input.GetKeyDown(KeyCode.E))
         {
             ChangeCurrentCell(currentX, currentY + 1, currentZ);
         }
@@ -59,6 +59,10 @@ public class CubeGridEditor : MonoBehaviour
         {
             RotateCurrent();
         }
+        else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            StopEditing();
+        }
     }
 
     public void StartEditing()
@@ -66,6 +70,12 @@ public class CubeGridEditor : MonoBehaviour
         editCamera.enabled = true;
         currentX = currentY = currentZ = 0;
         phantomCube = Instantiate(phantomPrefab);
+    }
+
+    public void StopEditing()
+    {
+        editCamera.enabled = false;
+        Destroy(phantomCube);
     }
 
     public void ChangeCurrentCell(int x, int y, int z)
