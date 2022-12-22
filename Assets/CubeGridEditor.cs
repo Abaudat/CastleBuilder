@@ -35,7 +35,7 @@ public class CubeGridEditor : MonoBehaviour
         {
             ChangeCurrentCell(currentX - 1, currentY, currentZ);
         }
-        else if (Input.GetKeyDown(KeyCode.E))
+        else if (Input.GetKeyDown(KeyCode.R))
         {
             ChangeCurrentCell(currentX, currentY + 1, currentZ);
         }
@@ -55,7 +55,7 @@ public class CubeGridEditor : MonoBehaviour
         {
             ChangeCurrentPrefab(2);
         }
-        else if (Input.GetKeyDown(KeyCode.R))
+        else if (Input.GetKeyDown(KeyCode.E))
         {
             RotateCurrent();
         }

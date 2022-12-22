@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerMover : MonoBehaviour
 {
+	public Camera playerCamera;
+
 	[SerializeField, Range(0f, 100f)]
 	float maxSpeed = 10f;
 	[SerializeField, Range(0f, 100f)]
@@ -14,6 +16,10 @@ public class PlayerMover : MonoBehaviour
 	float maxGroundAngle = 50f;
 	[SerializeField, Range(0f, 100f)]
 	float maxSnapSpeed = 100f;
+	[SerializeField, Range(0f, 100f)]
+	float sensitivityX = 100f;
+	[SerializeField, Range(0f, 100f)]
+	float sensitivityY = 100f;
 	[SerializeField, Range(0f, 1f)]
 	float gravityStrength = 0.1f;
 	[SerializeField, Min(0f)]
@@ -34,12 +40,19 @@ public class PlayerMover : MonoBehaviour
 
 	void Update()
 	{
-		Vector2 playerInput;
-		playerInput.x = Input.GetAxis("Horizontal");
-		playerInput.y = Input.GetAxis("Vertical");
-		playerInput = Vector2.ClampMagnitude(playerInput, 1f);
-		desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+		Vector3 playerInput = transform.forward * Input.GetAxis("Vertical") + transform.right * Input.GetAxis("Horizontal");
+		playerInput = Vector3.ClampMagnitude(playerInput, 1f);
+		desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.z) * maxSpeed;
 		desiredJump |= Input.GetButtonDown("Jump");
+		RotateCamera();
+	}
+
+	void RotateCamera()
+    {
+		float rotationX = Input.GetAxis("Mouse X") * sensitivityY;
+		float rotationY = Input.GetAxis("Mouse Y") * sensitivityX;
+		playerCamera.transform.Rotate(new Vector3(-rotationY, 0, 0));
+		transform.Rotate(new Vector3(0, rotationX, 0));
 	}
 
 	void FixedUpdate()

@@ -1082,6 +1082,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9033743861127216436, guid: f9a8f4c12ceba7a4ebe11b70d38da219,
         type: 3}
+      propertyPath: sensitivityX
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9033743861127216436, guid: f9a8f4c12ceba7a4ebe11b70d38da219,
+        type: 3}
+      propertyPath: sensitivityY
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9033743861127216436, guid: f9a8f4c12ceba7a4ebe11b70d38da219,
+        type: 3}
       propertyPath: gravityStrength
       value: 0.03
       objectReference: {fileID: 0}
