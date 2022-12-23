@@ -60,8 +60,8 @@ public class CubeGrid : MonoBehaviour
             Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot select it");
             return;
         }
-        previousMaterial = instancesGrid[x, y, z].GetComponent<Renderer>().material;
-        instancesGrid[x, y, z].GetComponent<Renderer>().material = selectMaterial;
+        previousMaterial = instancesGrid[x, y, z].GetComponentInChildren<Renderer>().material;
+        instancesGrid[x, y, z].GetComponentInChildren<Renderer>().material = selectMaterial;
     }
 
     public void UnselectElement(int x, int y, int z)
@@ -71,7 +71,7 @@ public class CubeGrid : MonoBehaviour
             Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot unselect it");
             return;
         }
-        instancesGrid[x, y, z].GetComponent<Renderer>().material = previousMaterial;
+        instancesGrid[x, y, z].GetComponentInChildren<Renderer>().material = previousMaterial;
     }
 
     public void MakeLayersAboveInvisible(int lastVisibleY) //TODO: Improve this to make layer right above transparent, and layers below obvious
@@ -85,7 +85,7 @@ public class CubeGrid : MonoBehaviour
                     GameObject gameObject = instancesGrid[i, j, k];
                     if (gameObject != null)
                     {
-                        gameObject.GetComponent<Renderer>().enabled = false;
+                        gameObject.GetComponentInChildren<Renderer>().enabled = false;
                     }
                 }
             }
@@ -101,7 +101,7 @@ public class CubeGrid : MonoBehaviour
                 GameObject gameObject = instancesGrid[i, y, k];
                 if (gameObject != null)
                 {
-                    gameObject.GetComponent<Renderer>().enabled = true;
+                    gameObject.GetComponentInChildren<Renderer>().enabled = true;
                 }
             }
         }
@@ -118,7 +118,7 @@ public class CubeGrid : MonoBehaviour
                     GameObject gameObject = instancesGrid[i, j, k];
                     if (gameObject != null)
                     {
-                        gameObject.GetComponent<Renderer>().enabled = true;
+                        gameObject.GetComponentInChildren<Renderer>().enabled = true;
                     }
                 }
             }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerMover : MonoBehaviour
 {
 	public Camera playerCamera;
+	public bool canMove = true;
 
 	[SerializeField, Range(0f, 100f)]
 	float maxSpeed = 10f;
@@ -40,11 +41,19 @@ public class PlayerMover : MonoBehaviour
 
 	void Update()
 	{
-		Vector3 playerInput = transform.forward * Input.GetAxis("Vertical") + transform.right * Input.GetAxis("Horizontal");
-		playerInput = Vector3.ClampMagnitude(playerInput, 1f);
-		desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.z) * maxSpeed;
-		desiredJump |= Input.GetButtonDown("Jump");
-		RotateCamera();
+		if (canMove)
+        {
+			Vector3 playerInput = transform.forward * Input.GetAxis("Vertical") + transform.right * Input.GetAxis("Horizontal");
+			playerInput = Vector3.ClampMagnitude(playerInput, 1f);
+			desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.z) * maxSpeed;
+			desiredJump |= Input.GetButtonDown("Jump");
+			RotateCamera();
+		}
+        else
+        {
+			desiredVelocity = Vector3.zero;
+			desiredJump = false;
+        }
 	}
 
 	void RotateCamera()

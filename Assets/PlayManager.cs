@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayManager : MonoBehaviour
 {
     public Transform playerSpawnPosition;
-    public GameObject playerPrefab;
+    public GameObject playerPrefab, winPanel, losePanel;
 
     private CubeGridEditor cubeGridEditor;
 
@@ -35,8 +35,12 @@ public class PlayManager : MonoBehaviour
 
     public void StartPlaying()
     {
+        if (exploringPlayer != null)
+        {
+            Destroy(exploringPlayer);
+        }
         isPlaying = true;
-        Instantiate(playerPrefab, playerSpawnPosition.position, Quaternion.identity);
+        exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, Quaternion.identity);
     }
 
     public void StopExploring()
@@ -44,5 +48,24 @@ public class PlayManager : MonoBehaviour
         isExploring = false;
         Destroy(exploringPlayer);
         cubeGridEditor.StartEditing();
+    }
+
+    public void StopPlaying()
+    {
+        isPlaying = false;
+        Destroy(exploringPlayer);
+        cubeGridEditor.StartEditing();
+    }
+
+    public void Success()
+    {
+        exploringPlayer.GetComponent<PlayerMover>().canMove = false;
+        winPanel.SetActive(true);
+    }
+
+    public void Die()
+    {
+        exploringPlayer.GetComponent<PlayerMover>().canMove = false;
+        losePanel.SetActive(true);
     }
 }

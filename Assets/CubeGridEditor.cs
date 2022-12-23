@@ -196,7 +196,7 @@ public class CubeGridEditor : MonoBehaviour
     {
         DestroyPhantom();
         phantomCube = Instantiate(PrefabHelper.PrefabFromIndex(currentPrefabIndex), new Vector3(currentX, currentY, currentZ), currentRotation.ToWorldRot());
-        phantomCube.GetComponent<Renderer>().material = phantomMaterial;
+        phantomCube.GetComponentInChildren<Renderer>().material = phantomMaterial;
     }
 
     private void DestroyPhantom()
