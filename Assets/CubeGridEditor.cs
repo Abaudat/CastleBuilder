@@ -32,8 +32,7 @@ public class CubeGridEditor : MonoBehaviour
     {
         if (isEditing)
         {
-            Vector3 worldMousePos = editCamera.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition);
-            ChangeCurrentCell(Mathf.RoundToInt(worldMousePos.x), currentY, Mathf.RoundToInt(worldMousePos.z));
+            ChangeCellToHovered();
             //TODO: Use layout-insensitive key mappings
             if (Input.GetKey(KeyCode.W))
             {
@@ -94,6 +93,17 @@ public class CubeGridEditor : MonoBehaviour
             {
                 StopExploring();
             }
+        }
+    }
+
+    private void ChangeCellToHovered()
+    {
+        Plane plane = new Plane(Vector3.up, Vector3.up * currentY);
+        Ray ray = editCameraComponent.ScreenPointToRay(Input.mousePosition);
+        if (plane.Raycast(ray, out float enter))
+        {
+            Vector3 contactPoint = ray.GetPoint(enter);
+            ChangeCurrentCell(Mathf.RoundToInt(contactPoint.x), currentY, Mathf.RoundToInt(contactPoint.z));
         }
     }
 
