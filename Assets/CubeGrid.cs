@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -9,12 +10,14 @@ public class CubeGrid : MonoBehaviour
     public int height = 5, width = 10, depth = 10;
     CubeGridElement[,,] elementGrid;
     GameObject[,,] instancesGrid;
-
-    private Material previousMaterial;
+    GameObject[,,] producersGrid;
+    GameObject[,,] consumersGrid;
 
     private void Awake()
     {
         instancesGrid = new GameObject[width, height, depth];
+        producersGrid = new GameObject[width, height, depth];
+        consumersGrid = new GameObject[width, height, depth];
         elementGrid = new CubeGridElement[width, height, depth];
         for (int i = 0; i < width; i++)
         {
@@ -60,7 +63,7 @@ public class CubeGrid : MonoBehaviour
 
     public void AddConsumerToProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
     {
-        elementGrid[producerX, producerY, producerZ].consumerCoords.Add(new Vector3Int(consumerX, consumerY, consumerZ));
+        elementGrid[producerX, producerY, producerZ].AddConsumerCoord(consumerX, consumerY, consumerZ);
         RecreateElement(producerX, producerY, producerZ, elementGrid[producerX, producerY, producerZ]);
     }
 
@@ -69,25 +72,93 @@ public class CubeGrid : MonoBehaviour
         return elementGrid[x, y, z].IsEmpty();
     }
 
-    public void SelectElement(int x, int y, int z)
-    {
-        if(elementGrid[x, y, z].IsEmpty())
-        {
-            Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot select it");
-            return;
-        }
-        previousMaterial = instancesGrid[x, y, z].GetComponentInChildren<Renderer>().material;
-        instancesGrid[x, y, z].GetComponentInChildren<Renderer>().material = selectMaterial;
-    }
-
-    public void UnselectElement(int x, int y, int z)
+    public void ChangeMaterial(int x, int y, int z, Action<MaterialManager> action)
     {
         if (elementGrid[x, y, z].IsEmpty())
         {
-            Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot unselect it");
             return;
         }
-        instancesGrid[x, y, z].GetComponentInChildren<Renderer>().material = previousMaterial;
+        action.Invoke(instancesGrid[x, y, z].GetComponentInChildren<MaterialManager>());
+    }
+
+    public void ChangeAllMaterials(Action<MaterialManager> action)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    ChangeMaterial(i, j, k, action);
+                }
+            }
+        }
+    }
+
+    public void ChangeAllSignalsMaterials(Action<MaterialManager> action)
+    {
+        ChangeAllProducersMaterials(action);
+        ChangeAllConsumersMaterials(action);
+    }
+
+    public void ChangeAllProducersMaterials(Action<MaterialManager> action)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    if (producersGrid[i, j, k] != null)
+                    {
+                        ChangeMaterial(i, j, k, action);
+                    }
+                }
+            }
+        }
+    }
+
+    public void ChangeAllConsumersLinkedToProducerMaterials(int producerX, int producerY, int producerZ, Action<MaterialManager> action)
+    {
+        CubeGridElement element = elementGrid[producerX, producerY, producerZ];
+        if (element != null)
+        {
+            element.consumerCoords.ForEach(coord => ChangeMaterial(coord.x, coord.y, coord.z, action));
+        }
+    }
+
+    public void ChangeAllProducersLinkedToConsumerMaterials(int consumerX, int consumerY, int consumerZ, Action<MaterialManager> action)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    if (elementGrid[i, j, k].consumerCoords.Contains(new Vector3Int(consumerX, consumerY, consumerZ)))
+                    {
+                        ChangeMaterial(i, j, k, action);
+                    }
+                }
+            }
+        }
+    }
+
+    public void ChangeAllConsumersMaterials(Action<MaterialManager> action)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    if (consumersGrid[i, j, k] != null)
+                    {
+                        ChangeMaterial(i, j, k, action);
+                    }
+                }
+            }
+        }
     }
 
     public void MakeLayersAboveInvisible(int lastVisibleY) //TODO: Improve this to make layer right above transparent, and layers below obvious
@@ -189,6 +260,14 @@ public class CubeGrid : MonoBehaviour
         {
             GameObject gameObject = Instantiate(element.GetPrefab(), new Vector3(x, y, z), element.rotation.ToWorldRot());
             instancesGrid[x, y, z] = gameObject;
+            if (gameObject.GetComponentInChildren<SignalProducer>() != null)
+            {
+                producersGrid[x, y, z] = gameObject;
+            }
+            if (gameObject.GetComponentInChildren<SignalConsumer>() != null)
+            {
+                consumersGrid[x, y, z] = gameObject;
+            }
             element.consumerCoords.ForEach(coord =>
             {
                 SignalConsumer consumer = GetInstance(coord.x, coord.y, coord.z).GetComponentInChildren<SignalConsumer>();
@@ -201,7 +280,7 @@ public class CubeGrid : MonoBehaviour
     {
         public Rotation rotation;
         public int prefabIndex;
-        public List<Vector3Int> consumerCoords;
+        public List<Vector3Int> consumerCoords; //TODO: Encapsulate and make sure coords are not laready there
 
         public CubeGridElement(Rotation rotation, int prefabIndex)
         {
@@ -228,6 +307,15 @@ public class CubeGrid : MonoBehaviour
         public bool IsEmpty()
         {
             return prefabIndex == 0;
+        }
+
+        public void AddConsumerCoord(int x, int y, int z)
+        {
+            Vector3Int vector3Int = new Vector3Int(x, y, z);
+            if (!consumerCoords.Contains(vector3Int))
+            {
+                consumerCoords.Add(vector3Int);
+            }
         }
 
         public void Save(BinaryWriter writer)

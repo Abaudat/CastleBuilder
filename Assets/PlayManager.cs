@@ -20,7 +20,7 @@ public class PlayManager : MonoBehaviour
     {
         if (isExploring)
         {
-            if (Input.GetKeyDown(KeyCode.P))
+            if (Input.GetKeyDown(KeyCode.O))
             {
                 StopExploring();
             }
