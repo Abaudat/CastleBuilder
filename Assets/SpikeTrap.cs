@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chest : CollisionBlock
+public class SpikeTrap : CollisionBlock
 {
     protected override void OnPlayerCollision()
     {
-        playManager.Success();
+        playManager.Die();
     }
 }

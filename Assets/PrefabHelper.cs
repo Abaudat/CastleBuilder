@@ -16,6 +16,8 @@ public class PrefabHelper
                 return Resources.Load("Spike") as GameObject;
             case 5:
                 return Resources.Load("Chest") as GameObject;
+            case 6:
+                return Resources.Load("SpikeTrap") as GameObject;
             default:
                 return null;
         }
