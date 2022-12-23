@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 public class CubeGridEditor : MonoBehaviour
 {
     public GameObject editCamera, editPanel;
+    public Transform playerSpawnPosition;
     public CubeGrid cubeGrid;
     public GameObject phantomPrefab, playerPrefab;
     public EventSystem eventSystem;
@@ -104,6 +105,10 @@ public class CubeGridEditor : MonoBehaviour
             {
                 StartExploring();
             }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                StartPlaying();
+            }
         }
         else if (isExploring)
         {
@@ -159,6 +164,12 @@ public class CubeGridEditor : MonoBehaviour
     {
         isExploring = true;
         exploringPlayer = Instantiate(playerPrefab, new Vector3(currentX, currentY, currentZ), Quaternion.identity);
+        StopEditing();
+    }
+
+    public void StartPlaying() //TODO: Move to other class
+    {
+        Instantiate(playerPrefab, playerSpawnPosition.position, Quaternion.identity);
         StopEditing();
     }
 
