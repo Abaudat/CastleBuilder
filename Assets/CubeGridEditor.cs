@@ -26,10 +26,12 @@ public class CubeGridEditor : MonoBehaviour
     private Camera editCameraComponent;
     private PlayManager playManager;
     private int currentX, currentY, currentZ;
-    private GameObject phantomCube, exploringPlayer;
-    private bool isEditing;
+    private GameObject phantomCube;
+    private bool isEditing, isEditingSignals;
     private int currentPrefabIndex = 1;
     private Rotation currentRotation = Rotation.NORTH;
+    private Vector3Int? currentSignalProducerCoords;
+    private Vector3Int? currentSignalConsumerCoords;
 
     private void Start()
     {
@@ -42,27 +44,66 @@ public class CubeGridEditor : MonoBehaviour
     {
         if (isEditing)
         {
+            if (isEditingSignals)
+            {
+                if (!eventSystem.IsPointerOverGameObject())
+                {
+                    if (Input.GetKeyDown(KeyCode.Mouse0))
+                    {
+                        SetSignalsToHovered();
+                    }
+                    if (Input.GetKeyDown(KeyCode.Mouse1))
+                    {
+                        
+                    }
+                }
+            }
+            else
+            {
+                if (!eventSystem.IsPointerOverGameObject())
+                {
+                    ChangeCellToHovered();
+                    if (Input.GetKeyDown(KeyCode.Mouse0))
+                    {
+                        if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+                        {
+                            ChangeSelectedElement(currentPrefabIndex);
+                        }
+                    }
+                    if (Input.GetKeyDown(KeyCode.Mouse1))
+                    {
+                        ChangeSelectedElement(0);
+                        GeneratePhantom();
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+                    {
+                        currentRotation = currentRotation.Rotate();
+                        GeneratePhantom();
+                    }
+                    else
+                    {
+                        RotateCurrent();
+                    }
+                }
+                else if (Input.GetKeyDown(KeyCode.P))
+                {
+                    StartExploring();
+                }
+            }
+
             if (!eventSystem.IsPointerOverGameObject())
             {
-                ChangeCellToHovered();
                 if (Input.mouseScrollDelta.y != 0)
                 {
                     editCameraComponent.orthographicSize = Mathf.Clamp(editCameraComponent.orthographicSize - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
                 }
-                if (Input.GetKeyDown(KeyCode.Mouse0))
-                {
-                    if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ)) {
-                        ChangeSelectedElement(currentPrefabIndex);
-                    }
-                }
-                if (Input.GetKeyDown(KeyCode.Mouse1))
-                {
-                    ChangeSelectedElement(0);
-                    GeneratePhantom();
-                }
             }
-            //TODO: Use layout-insensitive key mappings
-            if (Input.GetKey(KeyCode.W))
+
+                //TODO: Use layout-insensitive key mappings
+                if (Input.GetKey(KeyCode.W))
             {
                 editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.up);
             }
@@ -88,26 +129,6 @@ public class CubeGridEditor : MonoBehaviour
                 ChangeCurrentCell(currentX, currentY - 1, currentZ);
                 cubeGrid.MakeLayersAboveInvisible(currentY);
             }
-            else if (Input.GetKeyDown(KeyCode.E))
-            {
-                if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
-                {
-                    currentRotation = currentRotation.Rotate();
-                    GeneratePhantom();
-                }
-                else
-                {
-                    RotateCurrent();
-                }
-            }
-            else if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                StopEditing();
-            }
-            else if (Input.GetKeyDown(KeyCode.P))
-            {
-                StartExploring();
-            }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
                 StartPlaying();
@@ -115,15 +136,73 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
+    private void SetSignalsToHovered()
+    {
+        Vector3Int? cursorCell = GetCursorCell();
+        if (cursorCell.HasValue)
+        {
+            int x = cursorCell.Value.x;
+            int y = cursorCell.Value.y;
+            int z = cursorCell.Value.z;
+            if (x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
+            {
+                SignalProducer producer = cubeGrid.GetInstance(x, y, z).GetComponentInChildren<SignalProducer>();
+                SignalConsumer consumer = cubeGrid.GetInstance(x, y, z).GetComponentInChildren<SignalConsumer>();
+                if (currentSignalConsumerCoords.HasValue)
+                {
+                    if (producer != null)
+                    {
+                        cubeGrid.AddConsumerToProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
+                        currentSignalConsumerCoords = null;
+                    } else if (consumer != null)
+                    {
+                        currentSignalConsumerCoords = new Vector3Int(x, y, z);
+                    }
+                } else if (currentSignalProducerCoords.HasValue)
+                {
+                    if (consumer != null)
+                    {
+                        cubeGrid.AddConsumerToProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
+                        currentSignalProducerCoords = null;
+                    }
+                    else if (producer != null)
+                    {
+                        currentSignalProducerCoords = new Vector3Int(x, y, z);
+                    }
+                }
+                else
+                {
+                    if (producer != null)
+                    {
+                        currentSignalProducerCoords = new Vector3Int(x, y, z);
+                    } else if (consumer != null)
+                    {
+                        currentSignalConsumerCoords = new Vector3Int(x, y, z);
+                    }
+                }
+            }
+        }
+    }
+
     private void ChangeCellToHovered()
+    {
+        Vector3Int? cursorCell = GetCursorCell();
+        if (cursorCell.HasValue)
+        {
+            ChangeCurrentCell(cursorCell.Value.x, cursorCell.Value.y, cursorCell.Value.z);
+        }
+    }
+
+    private Vector3Int? GetCursorCell()
     {
         Plane plane = new Plane(Vector3.up, Vector3.up * currentY);
         Ray ray = editCameraComponent.ScreenPointToRay(Input.mousePosition);
         if (plane.Raycast(ray, out float enter))
         {
             Vector3 contactPoint = ray.GetPoint(enter);
-            ChangeCurrentCell(Mathf.RoundToInt(contactPoint.x), currentY, Mathf.RoundToInt(contactPoint.z));
+            return new Vector3Int(Mathf.RoundToInt(contactPoint.x), currentY, Mathf.RoundToInt(contactPoint.z));
         }
+        return null;
     }
 
     public void ChangeCurrentPrefabIndex(int index)
@@ -190,6 +269,18 @@ public class CubeGridEditor : MonoBehaviour
         editPanel.SetActive(false);
         editCamera.SetActive(false);
         DestroyPhantom();
+    }
+
+    public void StartEditingSignals()
+    {
+        isEditingSignals = true;
+        DestroyPhantom();
+    }
+
+    public void StopEditingSignals()
+    {
+        isEditingSignals = false;
+        GeneratePhantom();
     }
 
     private void GeneratePhantom()

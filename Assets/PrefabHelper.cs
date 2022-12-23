@@ -18,6 +18,10 @@ public class PrefabHelper
                 return Resources.Load("Chest") as GameObject;
             case 6:
                 return Resources.Load("SpikeTrap") as GameObject;
+            case 7:
+                return Resources.Load("PressurePlate") as GameObject;
+            case 8:
+                return Resources.Load("RotatingWall") as GameObject;
             default:
                 return null;
         }

@@ -34,6 +34,16 @@ public class CubeGrid : MonoBehaviour
         RecreateElement(x, y, z, element);
     }
 
+    public GameObject GetInstance(int x, int y, int z)
+    {
+        if(x >= 0 && x < width && y >= 0 && y < height && z >= 0 && z < depth)
+        {
+            return instancesGrid[x, y, z];
+        }
+        Debug.LogWarning("Out of bounds: " + x + " " + y + " " + z);
+        return null;
+    }
+
     public void RotateElement(int x, int y, int z)
     {
         CubeGridElement element = elementGrid[x, y, z].Rotate();
@@ -48,14 +58,20 @@ public class CubeGrid : MonoBehaviour
         RecreateElement(x, y, z, element);
     }
 
+    public void AddConsumerToProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
+    {
+        elementGrid[producerX, producerY, producerZ].consumerCoords.Add(new Vector3Int(consumerX, consumerY, consumerZ));
+        RecreateElement(producerX, producerY, producerZ, elementGrid[producerX, producerY, producerZ]);
+    }
+
     public bool IsElementEmpty(int x, int y, int z)
     {
-        return elementGrid[x, y, z].isEmpty();
+        return elementGrid[x, y, z].IsEmpty();
     }
 
     public void SelectElement(int x, int y, int z)
     {
-        if(elementGrid[x, y, z].isEmpty())
+        if(elementGrid[x, y, z].IsEmpty())
         {
             Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot select it");
             return;
@@ -66,7 +82,7 @@ public class CubeGrid : MonoBehaviour
 
     public void UnselectElement(int x, int y, int z)
     {
-        if (elementGrid[x, y, z].isEmpty())
+        if (elementGrid[x, y, z].IsEmpty())
         {
             Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot unselect it");
             return;
@@ -148,6 +164,15 @@ public class CubeGrid : MonoBehaviour
                 for (int k = 0; k < depth; k++)
                 {
                     elementGrid[i, j, k].Load(reader);
+                }
+            }
+        }
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
                     RecreateElement(i, j, k, elementGrid[i, j, k]);
                 }
             }
@@ -162,7 +187,13 @@ public class CubeGrid : MonoBehaviour
         }
         if (element.GetPrefab() != null)
         {
-            instancesGrid[x, y, z] = Instantiate(element.GetPrefab(), new Vector3(x, y, z), element.rotation.ToWorldRot());
+            GameObject gameObject = Instantiate(element.GetPrefab(), new Vector3(x, y, z), element.rotation.ToWorldRot());
+            instancesGrid[x, y, z] = gameObject;
+            element.consumerCoords.ForEach(coord =>
+            {
+                SignalConsumer consumer = GetInstance(coord.x, coord.y, coord.z).GetComponentInChildren<SignalConsumer>();
+                gameObject.GetComponentInChildren<SignalProducer>().consumers.Add(consumer);
+            });
         }
     }
 
@@ -170,11 +201,13 @@ public class CubeGrid : MonoBehaviour
     {
         public Rotation rotation;
         public int prefabIndex;
+        public List<Vector3Int> consumerCoords;
 
         public CubeGridElement(Rotation rotation, int prefabIndex)
         {
             this.rotation = rotation;
             this.prefabIndex = prefabIndex;
+            this.consumerCoords = new List<Vector3Int>();
         }
 
         public CubeGridElement Rotate()
@@ -192,7 +225,7 @@ public class CubeGrid : MonoBehaviour
             return PrefabHelper.PrefabFromIndex(prefabIndex);
         }
 
-        public bool isEmpty()
+        public bool IsEmpty()
         {
             return prefabIndex == 0;
         }
@@ -201,12 +234,24 @@ public class CubeGrid : MonoBehaviour
         {
             writer.Write((byte)rotation);
             writer.Write(prefabIndex);
+            writer.Write(consumerCoords.Count);
+            consumerCoords.ForEach(coord =>
+            {
+                writer.Write(coord.x);
+                writer.Write(coord.y);
+                writer.Write(coord.z);
+            });
         }
 
-        public void Load(BinaryReader reader)
+        public virtual void Load(BinaryReader reader)
         {
             rotation = (Rotation)reader.ReadByte();
             prefabIndex = reader.ReadInt32();
+            int numberOfConsumers = reader.ReadInt32();
+            for (int i = 0; i < numberOfConsumers; i++)
+            {
+                consumerCoords.Add(new Vector3Int(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32()));
+            }
         }
     }
 }
