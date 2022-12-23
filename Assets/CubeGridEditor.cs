@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
+using UnityEngine.UI;
 
 public class CubeGridEditor : MonoBehaviour
 {
@@ -10,6 +12,7 @@ public class CubeGridEditor : MonoBehaviour
     public CubeGrid cubeGrid;
     public EventSystem eventSystem;
     public Material phantomMaterial;
+    public TMP_InputField exportInput, importInput;
 
     [SerializeField, Range(0f, 100f)]
     float cameraSpeed = 10f;
@@ -130,18 +133,20 @@ public class CubeGridEditor : MonoBehaviour
         GeneratePhantom();
     }
 
-    public void Save()
+    public void Export()
     {
-        string path = Path.Combine(Application.persistentDataPath, "test.map");
-        using BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create));
+        using MemoryStream memoryStream = new MemoryStream();
+        using BinaryWriter writer = new BinaryWriter(memoryStream);
         writer.Write(0);
         cubeGrid.Save(writer);
+        exportInput.text = System.Convert.ToBase64String(memoryStream.ToArray());
     }
 
-    public void Load()
+    public void Import()
     {
-        string path = Path.Combine(Application.persistentDataPath, "test.map");
-        using BinaryReader reader = new BinaryReader(File.OpenRead(path));
+        string importString = importInput.text;
+        byte[] bytes = System.Convert.FromBase64String(importString);
+        using BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
         int header = reader.ReadInt32();
         if (header == 0)
         {
