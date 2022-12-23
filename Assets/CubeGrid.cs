@@ -44,6 +44,39 @@ public class CubeGrid : MonoBehaviour
         RecreateElement(x, y, z, element);
     }
 
+    public void MakeLayersAboveInvisible(int lastVisibleY) //TODO: Improve this to make layer right above transparent, and layers below obvious
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = lastVisibleY + 1; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    GameObject gameObject = instancesGrid[i, j, k];
+                    if (gameObject != null)
+                    {
+                        gameObject.GetComponent<Renderer>().enabled = false;
+                    }
+                }
+            }
+        }
+    }
+
+    public void MakeLayerVisible(int y)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int k = 0; k < depth; k++)
+            {
+                GameObject gameObject = instancesGrid[i, y, k];
+                if (gameObject != null)
+                {
+                    gameObject.GetComponent<Renderer>().enabled = true;
+                }
+            }
+        }
+    }
+
     private void RecreateElement(int x, int y, int z, CubeGridElement element)
     {
         if (instancesGrid[x, y, z] != null)

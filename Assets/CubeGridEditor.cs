@@ -22,7 +22,7 @@ public class CubeGridEditor : MonoBehaviour
     private GameObject phantomCube, exploringPlayer;
     private bool isEditing, isExploring;
 
-    private void Awake()
+    private void Start()
     {
         editCameraComponent = editCamera.GetComponent<Camera>();
         StartEditing();
@@ -57,10 +57,12 @@ public class CubeGridEditor : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.R))
             {
                 ChangeCurrentCell(currentX, currentY + 1, currentZ);
+                cubeGrid.MakeLayerVisible(currentY);
             }
             else if (Input.GetKeyDown(KeyCode.F))
             {
                 ChangeCurrentCell(currentX, currentY - 1, currentZ);
+                cubeGrid.MakeLayersAboveInvisible(currentY);
             }
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
@@ -126,6 +128,7 @@ public class CubeGridEditor : MonoBehaviour
         isEditing = true;
         editCamera.SetActive(true);
         phantomCube = Instantiate(phantomPrefab);
+        cubeGrid.MakeLayersAboveInvisible(currentY);
     }
 
     public void StopEditing()
