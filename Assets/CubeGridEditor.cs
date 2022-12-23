@@ -7,9 +7,7 @@ using UnityEngine.EventSystems;
 public class CubeGridEditor : MonoBehaviour
 {
     public GameObject editCamera, editPanel;
-    public Transform playerSpawnPosition;
     public CubeGrid cubeGrid;
-    public GameObject phantomPrefab, playerPrefab;
     public EventSystem eventSystem;
     public Material phantomMaterial;
 
@@ -23,14 +21,16 @@ public class CubeGridEditor : MonoBehaviour
     float cameraMinZoom = 5f;
 
     private Camera editCameraComponent;
+    private PlayManager playManager;
     private int currentX, currentY, currentZ;
     private GameObject phantomCube, exploringPlayer;
-    private bool isEditing, isExploring;
+    private bool isEditing;
     private int currentPrefabIndex = 1;
     private Rotation currentRotation = Rotation.NORTH;
 
     private void Start()
     {
+        playManager = FindObjectOfType<PlayManager>();
         editCameraComponent = editCamera.GetComponent<Camera>();
         StartEditing();
     }
@@ -110,13 +110,6 @@ public class CubeGridEditor : MonoBehaviour
                 StartPlaying();
             }
         }
-        else if (isExploring)
-        {
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                StopExploring();
-            }
-        }
     }
 
     private void ChangeCellToHovered()
@@ -162,22 +155,14 @@ public class CubeGridEditor : MonoBehaviour
 
     public void StartExploring()
     {
-        isExploring = true;
-        exploringPlayer = Instantiate(playerPrefab, new Vector3(currentX, currentY, currentZ), Quaternion.identity);
         StopEditing();
+        playManager.StartExploring(currentX, currentY, currentZ);
     }
 
     public void StartPlaying() //TODO: Move to other class
     {
-        Instantiate(playerPrefab, playerSpawnPosition.position, Quaternion.identity);
         StopEditing();
-    }
-
-    public void StopExploring()
-    {
-        isExploring = false;
-        Destroy(exploringPlayer);
-        StartEditing();
+        playManager.StartPlaying();
     }
 
     public void StartEditing()
