@@ -132,7 +132,7 @@ MonoBehaviour:
   playerCamera: {fileID: 838342358050647783}
   maxSpeed: 2
   maxAcceleration: 10
-  maxAirAcceleration: 1
+  maxAirAcceleration: 5
   jumpHeight: 1
   maxGroundAngle: 50
   maxSnapSpeed: 100

@@ -2,12 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public GameObject editCamera;
+    public GameObject editCamera, editPanel;
     public CubeGrid cubeGrid;
     public GameObject phantomPrefab, playerPrefab;
+    public EventSystem eventSystem;
+    public Material phantomMaterial;
 
     [SerializeField, Range(0f, 100f)]
     float cameraSpeed = 10f;
@@ -22,6 +25,8 @@ public class CubeGridEditor : MonoBehaviour
     private int currentX, currentY, currentZ;
     private GameObject phantomCube, exploringPlayer;
     private bool isEditing, isExploring;
+    private int currentPrefabIndex = 1;
+    private Rotation currentRotation = Rotation.NORTH;
 
     private void Start()
     {
@@ -33,15 +38,25 @@ public class CubeGridEditor : MonoBehaviour
     {
         if (isEditing)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha9))
+            if (!eventSystem.IsPointerOverGameObject())
             {
-                Save();
+                ChangeCellToHovered();
+                if (Input.mouseScrollDelta.y != 0)
+                {
+                    editCameraComponent.orthographicSize = Mathf.Clamp(editCameraComponent.orthographicSize - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
+                }
+                if (Input.GetKeyDown(KeyCode.Mouse0))
+                {
+                    if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ)) {
+                        ChangeSelectedElement(currentPrefabIndex);
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.Mouse1))
+                {
+                    ChangeSelectedElement(0);
+                    GeneratePhantom();
+                }
             }
-            if (Input.GetKeyDown(KeyCode.Alpha0))
-            {
-                Load();
-            }
-            ChangeCellToHovered();
             //TODO: Use layout-insensitive key mappings
             if (Input.GetKey(KeyCode.W))
             {
@@ -59,10 +74,6 @@ public class CubeGridEditor : MonoBehaviour
             {
                 editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.left);
             }
-            if (Input.mouseScrollDelta.y != 0)
-            {
-                editCameraComponent.orthographicSize = Mathf.Clamp(editCameraComponent.orthographicSize - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
-            }
             if (Input.GetKeyDown(KeyCode.R))
             {
                 ChangeCurrentCell(currentX, currentY + 1, currentZ);
@@ -73,21 +84,17 @@ public class CubeGridEditor : MonoBehaviour
                 ChangeCurrentCell(currentX, currentY - 1, currentZ);
                 cubeGrid.MakeLayersAboveInvisible(currentY);
             }
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                ChangeCurrentPrefab(0);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                ChangeCurrentPrefab(1);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                ChangeCurrentPrefab(2);
-            }
             else if (Input.GetKeyDown(KeyCode.E))
             {
-                RotateCurrent();
+                if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+                {
+                    currentRotation = currentRotation.Rotate();
+                    GeneratePhantom();
+                }
+                else
+                {
+                    RotateCurrent();
+                }
             }
             else if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -118,9 +125,15 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
+    public void ChangeCurrentPrefabIndex(int index)
+    {
+        currentPrefabIndex = index;
+        DestroyPhantom();
+        GeneratePhantom();
+    }
+
     public void Save()
     {
-        Debug.Log(Application.persistentDataPath);
         string path = Path.Combine(Application.persistentDataPath, "test.map");
         using BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create));
         writer.Write(0);
@@ -159,36 +172,72 @@ public class CubeGridEditor : MonoBehaviour
     public void StartEditing()
     {
         isEditing = true;
+        editPanel.SetActive(true);
         editCamera.SetActive(true);
-        phantomCube = Instantiate(phantomPrefab);
+        GeneratePhantom();
         cubeGrid.MakeLayersAboveInvisible(currentY);
     }
 
     public void StopEditing()
     {
+        if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+        {
+            cubeGrid.UnselectElement(currentX, currentY, currentZ);
+        }
+        cubeGrid.MakeAllLayersVisible();
         isEditing = false;
+        editPanel.SetActive(false);
         editCamera.SetActive(false);
-        Destroy(phantomCube);
+        DestroyPhantom();
+    }
+
+    private void GeneratePhantom()
+    {
+        DestroyPhantom();
+        phantomCube = Instantiate(PrefabHelper.PrefabFromIndex(currentPrefabIndex), new Vector3(currentX, currentY, currentZ), currentRotation.ToWorldRot());
+        phantomCube.GetComponent<Renderer>().material = phantomMaterial;
+    }
+
+    private void DestroyPhantom()
+    {
+        if (phantomCube != null)
+        {
+            Destroy(phantomCube);
+        }
     }
 
     public void ChangeCurrentCell(int x, int y, int z)
     {
-        if(x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
+        if((x != currentX || y != currentY || z != currentZ) && x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
         {
+            if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+            {
+                cubeGrid.UnselectElement(currentX, currentY, currentZ);
+            }
             currentX = x;
             currentY = y;
             currentZ = z;
-            phantomCube.transform.position = new Vector3(x, y, z);
+            if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+            {
+                GeneratePhantom();
+            }
+            else
+            {
+                DestroyPhantom();
+                cubeGrid.SelectElement(currentX, currentY, currentZ);
+            }
         }
     }
 
     public void RotateCurrent()
     {
         cubeGrid.RotateElement(currentX, currentY, currentZ);
+        cubeGrid.SelectElement(currentX, currentY, currentZ);
     }
 
-    public void ChangeCurrentPrefab(int prefabIndex)
+    public void ChangeSelectedElement(int prefabIndex)
     {
-        cubeGrid.ChangeElementPrefab(currentX, currentY, currentZ, prefabIndex);
+        cubeGrid.ChangeElement(currentX, currentY, currentZ, prefabIndex, currentRotation);
+        cubeGrid.SelectElement(currentX, currentY, currentZ);
     }
 }

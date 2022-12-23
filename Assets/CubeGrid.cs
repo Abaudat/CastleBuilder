@@ -5,9 +5,12 @@ using UnityEngine;
 
 public class CubeGrid : MonoBehaviour
 {
+    public Material selectMaterial;
     public int height = 5, width = 10, depth = 10;
     CubeGridElement[,,] elementGrid;
     GameObject[,,] instancesGrid;
+
+    private Material previousMaterial;
 
     private void Awake()
     {
@@ -38,11 +41,37 @@ public class CubeGrid : MonoBehaviour
         RecreateElement(x, y, z, element);
     }
 
-    public void ChangeElementPrefab(int x, int y, int z, int prefabIndex)
+    public void ChangeElement(int x, int y, int z, int prefabIndex, Rotation rotation)
     {
-        CubeGridElement element = elementGrid[x, y, z].ChangePrefab(prefabIndex);
+        CubeGridElement element = elementGrid[x, y, z].ChangePrefabAndRotation(prefabIndex, rotation);
         elementGrid[x, y, z] = element;
         RecreateElement(x, y, z, element);
+    }
+
+    public bool IsElementEmpty(int x, int y, int z)
+    {
+        return elementGrid[x, y, z].isEmpty();
+    }
+
+    public void SelectElement(int x, int y, int z)
+    {
+        if(elementGrid[x, y, z].isEmpty())
+        {
+            Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot select it");
+            return;
+        }
+        previousMaterial = instancesGrid[x, y, z].GetComponent<Renderer>().material;
+        instancesGrid[x, y, z].GetComponent<Renderer>().material = selectMaterial;
+    }
+
+    public void UnselectElement(int x, int y, int z)
+    {
+        if (elementGrid[x, y, z].isEmpty())
+        {
+            Debug.LogWarning("Element at " + x + " " + y + " " + z + " is empty, cannot unselect it");
+            return;
+        }
+        instancesGrid[x, y, z].GetComponent<Renderer>().material = previousMaterial;
     }
 
     public void MakeLayersAboveInvisible(int lastVisibleY) //TODO: Improve this to make layer right above transparent, and layers below obvious
@@ -73,6 +102,24 @@ public class CubeGrid : MonoBehaviour
                 if (gameObject != null)
                 {
                     gameObject.GetComponent<Renderer>().enabled = true;
+                }
+            }
+        }
+    }
+
+    public void MakeAllLayersVisible()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    GameObject gameObject = instancesGrid[i, j, k];
+                    if (gameObject != null)
+                    {
+                        gameObject.GetComponent<Renderer>().enabled = true;
+                    }
                 }
             }
         }
@@ -135,7 +182,7 @@ public class CubeGrid : MonoBehaviour
             return new(rotation.Rotate(), prefabIndex);
         }
 
-        public CubeGridElement ChangePrefab(int prefabIndex)
+        public CubeGridElement ChangePrefabAndRotation(int prefabIndex, Rotation rotation)
         {
             return new(rotation, prefabIndex);
         }
@@ -143,6 +190,11 @@ public class CubeGrid : MonoBehaviour
         public GameObject GetPrefab()
         {
             return PrefabHelper.PrefabFromIndex(prefabIndex);
+        }
+
+        public bool isEmpty()
+        {
+            return prefabIndex == 0;
         }
 
         public void Save(BinaryWriter writer)
