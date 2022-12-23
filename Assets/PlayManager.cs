@@ -40,7 +40,7 @@ public class PlayManager : MonoBehaviour
             Destroy(exploringPlayer);
         }
         isPlaying = true;
-        exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, Quaternion.identity);
+        exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
     }
 
     public void StopExploring()
