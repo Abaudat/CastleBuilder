@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public Camera editCamera;
+    public GameObject editCamera;
     public CubeGrid cubeGrid;
-    public GameObject phantomPrefab;
+    public GameObject phantomPrefab, playerPrefab;
 
     private int currentX, currentY, currentZ;
-    private GameObject phantomCube;
+    private GameObject phantomCube, exploringPlayer;
+    private bool isEditing, isExploring;
 
     private void Awake()
     {
@@ -18,63 +19,92 @@ public class CubeGridEditor : MonoBehaviour
 
     private void Update()
     {
-        //TODO: Use layout-insensitive key mappings
-        if (Input.GetKeyDown(KeyCode.W))
+        if (isEditing)
         {
-            ChangeCurrentCell(currentX, currentY, currentZ + 1);
-        } 
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            ChangeCurrentCell(currentX + 1, currentY, currentZ);
+            //TODO: Use layout-insensitive key mappings
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                ChangeCurrentCell(currentX, currentY, currentZ + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                ChangeCurrentCell(currentX + 1, currentY, currentZ);
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                ChangeCurrentCell(currentX, currentY, currentZ - 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                ChangeCurrentCell(currentX - 1, currentY, currentZ);
+            }
+            else if (Input.GetKeyDown(KeyCode.R))
+            {
+                ChangeCurrentCell(currentX, currentY + 1, currentZ);
+            }
+            else if (Input.GetKeyDown(KeyCode.F))
+            {
+                ChangeCurrentCell(currentX, currentY - 1, currentZ);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                ChangeCurrentPrefab(0);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                ChangeCurrentPrefab(1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                ChangeCurrentPrefab(2);
+            }
+            else if (Input.GetKeyDown(KeyCode.E))
+            {
+                RotateCurrent();
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                StopEditing();
+            }
+            else if (Input.GetKeyDown(KeyCode.P))
+            {
+                StartExploring();
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.S))
+        else if (isExploring)
         {
-            ChangeCurrentCell(currentX, currentY, currentZ - 1);
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                StopExploring();
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            ChangeCurrentCell(currentX - 1, currentY, currentZ);
-        }
-        else if (Input.GetKeyDown(KeyCode.R))
-        {
-            ChangeCurrentCell(currentX, currentY + 1, currentZ);
-        }
-        else if (Input.GetKeyDown(KeyCode.F))
-        {
-            ChangeCurrentCell(currentX, currentY - 1, currentZ);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            ChangeCurrentPrefab(0);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            ChangeCurrentPrefab(1);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            ChangeCurrentPrefab(2);
-        }
-        else if (Input.GetKeyDown(KeyCode.E))
-        {
-            RotateCurrent();
-        }
-        else if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            StopEditing();
-        }
+    }
+
+    public void StartExploring()
+    {
+        isExploring = true;
+        exploringPlayer = Instantiate(playerPrefab, new Vector3(currentX, currentY, currentZ), Quaternion.identity);
+        StopEditing();
+    }
+
+    public void StopExploring()
+    {
+        isExploring = false;
+        Destroy(exploringPlayer);
+        StartEditing();
     }
 
     public void StartEditing()
     {
-        editCamera.enabled = true;
-        currentX = currentY = currentZ = 0;
+        isEditing = true;
+        editCamera.SetActive(true);
         phantomCube = Instantiate(phantomPrefab);
     }
 
     public void StopEditing()
     {
-        editCamera.enabled = false;
+        isEditing = false;
+        editCamera.SetActive(false);
         Destroy(phantomCube);
     }
 
