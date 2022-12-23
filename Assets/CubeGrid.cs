@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class CubeGrid : MonoBehaviour
@@ -77,6 +78,35 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
+    public void Save(BinaryWriter writer)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    elementGrid[i, j, k].Save(writer);
+                }
+            }
+        }
+    }
+
+    public void Load(BinaryReader reader)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    elementGrid[i, j, k].Load(reader);
+                    RecreateElement(i, j, k, elementGrid[i, j, k]);
+                }
+            }
+        }
+    }
+
     private void RecreateElement(int x, int y, int z, CubeGridElement element)
     {
         if (instancesGrid[x, y, z] != null)
@@ -113,6 +143,18 @@ public class CubeGrid : MonoBehaviour
         public GameObject GetPrefab()
         {
             return PrefabHelper.PrefabFromIndex(prefabIndex);
+        }
+
+        public void Save(BinaryWriter writer)
+        {
+            writer.Write((byte)rotation);
+            writer.Write(prefabIndex);
+        }
+
+        public void Load(BinaryReader reader)
+        {
+            rotation = (Rotation)reader.ReadByte();
+            prefabIndex = reader.ReadInt32();
         }
     }
 }

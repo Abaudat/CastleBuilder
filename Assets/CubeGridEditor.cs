@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class CubeGridEditor : MonoBehaviour
@@ -32,6 +33,14 @@ public class CubeGridEditor : MonoBehaviour
     {
         if (isEditing)
         {
+            if (Input.GetKeyDown(KeyCode.Alpha9))
+            {
+                Save();
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha0))
+            {
+                Load();
+            }
             ChangeCellToHovered();
             //TODO: Use layout-insensitive key mappings
             if (Input.GetKey(KeyCode.W))
@@ -106,6 +115,30 @@ public class CubeGridEditor : MonoBehaviour
         {
             Vector3 contactPoint = ray.GetPoint(enter);
             ChangeCurrentCell(Mathf.RoundToInt(contactPoint.x), currentY, Mathf.RoundToInt(contactPoint.z));
+        }
+    }
+
+    public void Save()
+    {
+        Debug.Log(Application.persistentDataPath);
+        string path = Path.Combine(Application.persistentDataPath, "test.map");
+        using BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create));
+        writer.Write(0);
+        cubeGrid.Save(writer);
+    }
+
+    public void Load()
+    {
+        string path = Path.Combine(Application.persistentDataPath, "test.map");
+        using BinaryReader reader = new BinaryReader(File.OpenRead(path));
+        int header = reader.ReadInt32();
+        if (header == 0)
+        {
+            cubeGrid.Load(reader);
+        }
+        else
+        {
+            Debug.LogWarning("Unknown map format " + header);
         }
     }
 
