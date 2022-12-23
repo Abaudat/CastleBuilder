@@ -273,7 +273,7 @@ Camera:
   far clip plane: 1000
   field of view: 67.2
   orthographic: 1
-  orthographic size: 5.82
+  orthographic size: 3.5
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -644,6 +644,10 @@ MonoBehaviour:
     type: 3}
   playerPrefab: {fileID: 44903480036640198, guid: f9a8f4c12ceba7a4ebe11b70d38da219,
     type: 3}
+  cameraSpeed: 10
+  cameraZoomSpeed: 50
+  cameraMaxZoom: 7
+  cameraMinZoom: 1
 --- !u!1 &1596708332
 GameObject:
   m_ObjectHideFlags: 0

@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 838342358050647783}
-  maxSpeed: 3
+  maxSpeed: 2
   maxAcceleration: 10
   maxAirAcceleration: 1
   jumpHeight: 1

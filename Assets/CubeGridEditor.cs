@@ -8,12 +8,23 @@ public class CubeGridEditor : MonoBehaviour
     public CubeGrid cubeGrid;
     public GameObject phantomPrefab, playerPrefab;
 
+    [SerializeField, Range(0f, 100f)]
+    float cameraSpeed = 10f;
+    [SerializeField, Range(0f, 100f)]
+    float cameraZoomSpeed = 50f;
+    [SerializeField, Range(0f, 10f)]
+    float cameraMaxZoom = 0.2f;
+    [SerializeField, Range(0f, 10f)]
+    float cameraMinZoom = 5f;
+
+    private Camera editCameraComponent;
     private int currentX, currentY, currentZ;
     private GameObject phantomCube, exploringPlayer;
     private bool isEditing, isExploring;
 
     private void Awake()
     {
+        editCameraComponent = editCamera.GetComponent<Camera>();
         StartEditing();
     }
 
@@ -21,24 +32,30 @@ public class CubeGridEditor : MonoBehaviour
     {
         if (isEditing)
         {
+            Vector3 worldMousePos = editCamera.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition);
+            ChangeCurrentCell(Mathf.RoundToInt(worldMousePos.x), currentY, Mathf.RoundToInt(worldMousePos.z));
             //TODO: Use layout-insensitive key mappings
-            if (Input.GetKeyDown(KeyCode.W))
+            if (Input.GetKey(KeyCode.W))
             {
-                ChangeCurrentCell(currentX, currentY, currentZ + 1);
+                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.up);
             }
-            else if (Input.GetKeyDown(KeyCode.D))
+            else if (Input.GetKey(KeyCode.D))
             {
-                ChangeCurrentCell(currentX + 1, currentY, currentZ);
+                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.right);
             }
-            else if (Input.GetKeyDown(KeyCode.S))
+            else if (Input.GetKey(KeyCode.S))
             {
-                ChangeCurrentCell(currentX, currentY, currentZ - 1);
+                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.down);
             }
-            else if (Input.GetKeyDown(KeyCode.A))
+            else if (Input.GetKey(KeyCode.A))
             {
-                ChangeCurrentCell(currentX - 1, currentY, currentZ);
+                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.left);
             }
-            else if (Input.GetKeyDown(KeyCode.R))
+            if (Input.mouseScrollDelta.y != 0)
+            {
+                editCameraComponent.orthographicSize = Mathf.Clamp(editCameraComponent.orthographicSize - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
+            }
+            if (Input.GetKeyDown(KeyCode.R))
             {
                 ChangeCurrentCell(currentX, currentY + 1, currentZ);
             }
@@ -46,7 +63,7 @@ public class CubeGridEditor : MonoBehaviour
             {
                 ChangeCurrentCell(currentX, currentY - 1, currentZ);
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha1))
+            if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 ChangeCurrentPrefab(0);
             }
