@@ -5,7 +5,7 @@ using TMPro;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public GameObject editCamera, editPanel, editLayerPlanePrefab;
+    public GameObject editCamera, editPanel, editLayerPlanePrefab, rightWall, belowWall, roof;
     public CubeGrid cubeGrid;
     public EventSystem eventSystem;
     public Material phantomMaterial;
@@ -106,19 +106,19 @@ public class CubeGridEditor : MonoBehaviour
             }
 
                 //TODO: Use layout-insensitive key mappings
-                if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W))
             {
                 editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.up);
             }
-            else if (Input.GetKey(KeyCode.D))
+            if (Input.GetKey(KeyCode.D))
             {
                 editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.right);
             }
-            else if (Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.S))
             {
                 editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.down);
             }
-            else if (Input.GetKey(KeyCode.A))
+            if (Input.GetKey(KeyCode.A))
             {
                 editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.left);
             }
@@ -334,6 +334,9 @@ public class CubeGridEditor : MonoBehaviour
         isEditing = true;
         editPanel.SetActive(true);
         editCamera.SetActive(true);
+        rightWall.SetActive(false);
+        belowWall.SetActive(false);
+        roof.SetActive(false);
         GeneratePhantom();
         editLayerPlane = Instantiate(editLayerPlanePrefab, new Vector3(4.5f, currentY - 0.49f, 4.5f), Quaternion.identity);
         cubeGrid.SetPlacementModeMaterials(currentY);
@@ -345,6 +348,9 @@ public class CubeGridEditor : MonoBehaviour
         isEditing = false;
         editPanel.SetActive(false);
         editCamera.SetActive(false);
+        rightWall.SetActive(true);
+        belowWall.SetActive(true);
+        roof.SetActive(true);
         DestroyPhantom();
         Destroy(editLayerPlane);
     }
