@@ -25,16 +25,15 @@ public class CubeGrid : MonoBehaviour
             {
                 for (int k = 0; k < depth; k++)
                 {
-                    SetElement(i, j, k, new(Rotation.NORTH, 0));
+                    SetElementEmpty(i, j, k);
                 }
             }
         }
     }
 
-    public void SetElement(int x, int y, int z, CubeGridElement element)
+    public void SetElementEmpty(int x, int y, int z)
     {
-        elementGrid[x, y, z] = element;
-        RecreateElement(x, y, z, element);
+        ReplaceElement(x, y, z, new(Rotation.NORTH, 0));
     }
 
     public GameObject GetInstance(int x, int y, int z)
@@ -49,28 +48,26 @@ public class CubeGrid : MonoBehaviour
 
     public void RotateElement(int x, int y, int z)
     {
-        CubeGridElement element = elementGrid[x, y, z].Rotate();
-        elementGrid[x, y, z] = element;
-        RecreateElement(x, y, z, element);
+        elementGrid[x, y, z] = elementGrid[x, y, z].Rotate();
+        RecreateSameElement(x, y, z);
     }
 
     public void ChangeElement(int x, int y, int z, int prefabIndex, Rotation rotation)
     {
         CubeGridElement element = elementGrid[x, y, z].ChangePrefabAndRotation(prefabIndex, rotation);
-        elementGrid[x, y, z] = element;
-        RecreateElement(x, y, z, element);
+        ReplaceElement(x, y, z, element);
     }
 
     public void AddConsumerToProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
     {
         elementGrid[producerX, producerY, producerZ].AddConsumerCoord(consumerX, consumerY, consumerZ);
-        RecreateElement(producerX, producerY, producerZ, elementGrid[producerX, producerY, producerZ]);
+        RecomputeSignalNetwork();
     }
 
     public void RemoveConsumerFromProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
     {
         elementGrid[producerX, producerY, producerZ].RemoveConsumerCoord(consumerX, consumerY, consumerZ);
-        RecreateElement(producerX, producerY, producerZ, elementGrid[producerX, producerY, producerZ]);
+        RecomputeSignalNetwork();
     }
 
     public bool ProducerContainsConsumer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
@@ -242,14 +239,62 @@ public class CubeGrid : MonoBehaviour
             {
                 for (int k = 0; k < depth; k++)
                 {
-                    RecreateElement(i, j, k, elementGrid[i, j, k]);
+                    RecreateSameElement(i, j, k);
                 }
             }
         }
     }
 
-    private void RecreateElement(int x, int y, int z, CubeGridElement element)
+    private void EnableAllRigidbodies()
     {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    GameObject instance = instancesGrid[i, j, k];
+                    if (instance != null)
+                    {
+                        instance.EnableRigidbody();
+                    }
+                }
+            }
+        }
+    }
+
+    public void PrepareForPlay()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    RecreateElement(i, j, k);
+                }
+            }
+        }
+        RecomputeSignalNetwork();
+        EnableAllRigidbodies();
+    }
+
+    private void RecreateSameElement(int x, int y, int z)
+    {
+        RecreateElement(x, y, z);
+        RecomputeSignalNetwork();
+    }
+
+    private void ReplaceElement(int x, int y, int z, CubeGridElement element)
+    {
+        elementGrid[x, y, z] = element;
+        RecreateElement(x, y, z);
+        RemoveFromAllProducers(x, y, z);
+    }
+
+    private void RecreateElement(int x, int y, int z)
+    {
+        CubeGridElement element = elementGrid[x, y, z];
         if (instancesGrid[x, y, z] != null)
         {
             Destroy(instancesGrid[x, y, z]);
@@ -258,7 +303,7 @@ public class CubeGrid : MonoBehaviour
         {
             GameObject gameObject = Instantiate(element.GetPrefab(), new Vector3(x, y, z), element.rotation.ToWorldRot());
             instancesGrid[x, y, z] = gameObject;
-            if (gameObject.GetComponentInChildren<SignalProducer>() != null)
+            if (gameObject.TryGetComponentInChildren<SignalProducer>() != null)
             {
                 producersGrid[x, y, z] = gameObject;
             }
@@ -266,7 +311,7 @@ public class CubeGrid : MonoBehaviour
             {
                 producersGrid[x, y, z] = null;
             }
-            if (gameObject.GetComponentInChildren<SignalConsumer>() != null)
+            if (gameObject.TryGetComponentInChildren<SignalConsumer>() != null)
             {
                 consumersGrid[x, y, z] = gameObject;
             }
@@ -274,11 +319,57 @@ public class CubeGrid : MonoBehaviour
             {
                 consumersGrid[x, y, z] = null;
             }
-            element.consumerCoords.ForEach(coord =>
+        }
+    }
+
+    private void RemoveFromAllProducers(int consumerX, int consumerY, int consumerZ)
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
             {
-                SignalConsumer consumer = GetInstance(coord.x, coord.y, coord.z).GetComponentInChildren<SignalConsumer>();
-                gameObject.GetComponentInChildren<SignalProducer>().consumers.Add(consumer);
-            });
+                for (int k = 0; k < depth; k++)
+                {
+                    CubeGridElement element = elementGrid[i, j, k];
+                    if (element != null && ProducerContainsConsumer(consumerX, consumerY, consumerZ, i, j, k))
+                    {
+                        RemoveConsumerFromProducer(consumerX, consumerY, consumerZ, i, j, k);
+                    }
+                }
+            }
+        }
+        RecomputeSignalNetwork();
+    }
+
+    private void RewireToConsumers(CubeGridElement element)
+    {
+        element.consumerCoords.ForEach(coord =>
+        {
+            SignalConsumer consumer = GetInstance(coord.x, coord.y, coord.z).GetComponentInChildren<SignalConsumer>();
+            gameObject.GetComponentInChildren<SignalProducer>().consumers.Add(consumer);
+        });
+    }
+
+    private void RecomputeSignalNetwork()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    GameObject instance = producersGrid[i, j, k];
+                    if (instance != null)
+                    {
+                        instance.GetComponentInChildren<SignalProducer>().consumers.Clear();
+                        elementGrid[i, j, k].consumerCoords.ForEach(coord =>
+                        {
+                            SignalConsumer consumer = GetInstance(coord.x, coord.y, coord.z).GetComponentInChildren<SignalConsumer>();
+                            instance.GetComponentInChildren<SignalProducer>().consumers.Add(consumer);
+                        });
+                    }
+                }
+            }
         }
     }
 

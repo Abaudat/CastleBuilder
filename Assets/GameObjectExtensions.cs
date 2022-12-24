@@ -14,4 +14,13 @@ public static class GameObjectExtensions
             return default;
         }
     }
+
+    public static void EnableRigidbody(this GameObject gameObject)
+    {
+        RigidbodyEnabler rigidbodyEnabler = gameObject.TryGetComponentInChildren<RigidbodyEnabler>();
+        if (rigidbodyEnabler != null)
+        {
+            rigidbodyEnabler.Enable();
+        }
+    }
 }
