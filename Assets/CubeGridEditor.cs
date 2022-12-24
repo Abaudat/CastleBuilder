@@ -65,14 +65,14 @@ public class CubeGridEditor : MonoBehaviour
                 if (!eventSystem.IsPointerOverGameObject())
                 {
                     ChangeCellToHovered();
-                    if (Input.GetKeyDown(KeyCode.Mouse0))
+                    if (Input.GetKey(KeyCode.Mouse0))
                     {
                         if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
                         {
                             ChangeSelectedElement(currentPrefabIndex);
                         }
                     }
-                    if (Input.GetKeyDown(KeyCode.Mouse1))
+                    if (Input.GetKey(KeyCode.Mouse1))
                     {
                         ChangeSelectedElement(0);
                         GeneratePhantom();

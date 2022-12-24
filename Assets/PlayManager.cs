@@ -25,6 +25,13 @@ public class PlayManager : MonoBehaviour
                 StopExploring();
             }
         }
+        if (isPlaying)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                StopPlaying();
+            }
+        }
     }
 
     public void StartExploring(int x, int y, int z)
