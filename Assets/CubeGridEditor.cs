@@ -105,23 +105,8 @@ public class CubeGridEditor : MonoBehaviour
                 }
             }
 
-                //TODO: Use layout-insensitive key mappings
-            if (Input.GetKey(KeyCode.W))
-            {
-                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.up);
-            }
-            if (Input.GetKey(KeyCode.D))
-            {
-                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.right);
-            }
-            if (Input.GetKey(KeyCode.S))
-            {
-                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.down);
-            }
-            if (Input.GetKey(KeyCode.A))
-            {
-                editCamera.transform.Translate(cameraSpeed * Time.deltaTime * Vector3.left);
-            }
+            editCamera.transform.Translate(cameraSpeed * Time.deltaTime * new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0));
+
             if (Input.GetKeyDown(KeyCode.R))
             {
                 ChangeLayer(currentY + 1);
@@ -400,7 +385,7 @@ public class CubeGridEditor : MonoBehaviour
 
     public void ChangeCurrentCell(int x, int y, int z)
     {
-        if((x != currentX || y != currentY || z != currentZ) && x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
+        if(x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
         {
             if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
             {

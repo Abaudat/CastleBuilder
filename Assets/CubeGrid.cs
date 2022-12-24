@@ -264,10 +264,33 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
+    private void TriggerAllSelfdestructs()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    GameObject instance = instancesGrid[i, j, k];
+                    if (instance != null)
+                    {
+                        PlayModeSelfdestruct playModeSelfdestruct = instance.TryGetComponentInChildren<PlayModeSelfdestruct>();
+                        if (playModeSelfdestruct != null)
+                        {
+                            playModeSelfdestruct.SelfDestruct();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void PrepareForPlay()
     {
         RecreateAllElements();
         EnableAllRigidbodies();
+        TriggerAllSelfdestructs();
     }
 
     public void RecreateAllElements()
