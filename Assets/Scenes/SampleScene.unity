@@ -1831,7 +1831,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 67.2
-  orthographic: 1
+  orthographic: 0
   orthographic size: 3.5
   m_Depth: 0
   m_CullingMask:
@@ -3192,6 +3192,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1144337080}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &775499779
 MonoBehaviour:
@@ -4683,8 +4695,8 @@ MonoBehaviour:
   exportInput: {fileID: 871255987}
   importInput: {fileID: 1654655949}
   cameraSpeed: 10
-  cameraZoomSpeed: 50
-  cameraMaxZoom: 7
+  cameraZoomSpeed: 70
+  cameraMaxZoom: 10
   cameraMinZoom: 1
 --- !u!1 &1286533420
 GameObject:
@@ -4941,6 +4953,18 @@ MonoBehaviour:
           m_BoolArgument: 1
         m_CallState: 2
       - m_Target: {fileID: 1308203256}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1144337080}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -6473,6 +6497,12 @@ MonoBehaviour:
     type: 2}
   signalUnlinkedConsumerMaterial: {fileID: 2100000, guid: af9ec95c078d3f04a818db8cd21d52fd,
     type: 2}
+  transparentMaterial: {fileID: 2100000, guid: a96a7f93a6129cf4e93b5b8a6c3db3de, type: 2}
+  invisibleMaterial: {fileID: 2100000, guid: cd50aa2e989a02a40be2c5950155b2e8, type: 2}
+  signalHighlightUnderMaterial: {fileID: 2100000, guid: 8c71a165eaf926244b06d34196d16cf6,
+    type: 2}
+  signalLinkedUnder: {fileID: 2100000, guid: 13885e0048c9a594b99251c8ef810c55, type: 2}
+  signalUnlinkedUnder: {fileID: 2100000, guid: 943fc1f1fb231bc409ab26e88296111b, type: 2}
 --- !u!1 &1722304704
 GameObject:
   m_ObjectHideFlags: 0

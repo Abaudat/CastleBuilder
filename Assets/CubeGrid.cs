@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -84,9 +85,49 @@ public class CubeGrid : MonoBehaviour
         return elementGrid[x, y, z].IsEmpty();
     }
 
+    public void SetPlacementModeMaterials(int currentLayerY)
+    {
+        ChangeMaterialsOfLayersBelow(x => x.Shadow(), currentLayerY);
+        ChangeMaterialsOfLayer(x => x.ResetMaterial(), currentLayerY);
+        ChangeMaterialsOfLayer(x => x.Transparent(), currentLayerY + 1);
+        ChangeMaterialsOfLayersAbove(x => x.Invisible(), currentLayerY + 1);
+    }
+
+    public void SetSignalModeMaterials(int currentLayerY, Vector3Int? currentProducerCoords, Vector3Int? currentConsumerCoords)
+    {
+        ChangeMaterialsOfLayersBelow(x => x.Shadow(), currentLayerY + 1);
+        ChangeMaterialsOfLayer(x => x.Transparent(), currentLayerY + 1);
+        ChangeMaterialsOfLayersAbove(x => x.Invisible(), currentLayerY + 1);
+        if (currentProducerCoords.HasValue)
+        {
+            ChangeAllConsumersUnderMaterials(currentLayerY, k => k.HighlightUnlinkedUnder());
+            ChangeAllLinkedConsumersUnderMaterials(currentLayerY, currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.HighlightLinkedUnder());
+            ChangeAllConsumersSameLayerMaterials(currentLayerY, k => k.HighlightUnlinked());
+            ChangeAllLinkedConsumersSameLayerMaterials(currentLayerY, currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.HighlightLinked());
+            ChangeAllProducersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
+            ChangeMaterial(currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.Select());
+        }
+        else if (currentConsumerCoords.HasValue)
+        {
+            ChangeAllProducersUnderMaterials(currentLayerY, k => k.HighlightUnlinkedUnder());
+            ChangeAllLinkedProducersUnderMaterials(currentLayerY, currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.HighlightLinkedUnder());
+            ChangeAllProducersSameLayerMaterials(currentLayerY, k => k.HighlightUnlinked());
+            ChangeAllLinkedProducersSameLayerMaterials(currentLayerY, currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.HighlightLinked());
+            ChangeAllConsumersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
+            ChangeMaterial(currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.Select());
+        }
+        else
+        {
+            ChangeAllConsumersUnderMaterials(currentLayerY, k => k.HighlightSignalUnder());
+            ChangeAllProducersUnderMaterials(currentLayerY, k => k.HighlightSignalUnder());
+            ChangeAllConsumersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
+            ChangeAllProducersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
+        }
+    }
+
     public void ChangeMaterial(int x, int y, int z, Action<MaterialManager> action)
     {
-        if (elementGrid[x, y, z].IsEmpty())
+        if (IsInBounds(x, y, z) && elementGrid[x, y, z].IsEmpty())
         {
             return;
         }
@@ -95,25 +136,10 @@ public class CubeGrid : MonoBehaviour
 
     public void ChangeAllMaterials(Action<MaterialManager> action)
     {
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                for (int k = 0; k < depth; k++)
-                {
-                    ChangeMaterial(i, j, k, action);
-                }
-            }
-        }
+        ChangeAllMaterials(action, (_, _, _) => true);
     }
 
-    public void ChangeAllSignalsMaterials(Action<MaterialManager> action)
-    {
-        ChangeAllProducersMaterials(action);
-        ChangeAllConsumersMaterials(action);
-    }
-
-    public void ChangeAllProducersMaterials(Action<MaterialManager> action)
+    private void ChangeAllMaterials(Action<MaterialManager> action, Func<int, int, int, bool> filter)
     {
         for (int i = 0; i < width; i++)
         {
@@ -121,7 +147,7 @@ public class CubeGrid : MonoBehaviour
             {
                 for (int k = 0; k < depth; k++)
                 {
-                    if (producersGrid[i, j, k] != null)
+                    if (filter.Invoke(i, j, k))
                     {
                         ChangeMaterial(i, j, k, action);
                     }
@@ -130,98 +156,59 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
-    public void ChangeAllConsumersLinkedToProducerMaterials(int producerX, int producerY, int producerZ, Action<MaterialManager> action)
+    private void ChangeMaterialsOfLayer(Action<MaterialManager> action, int layerY)
     {
-        CubeGridElement element = elementGrid[producerX, producerY, producerZ];
-        if (element != null)
-        {
-            element.consumerCoords.ForEach(coord => ChangeMaterial(coord.x, coord.y, coord.z, action));
-        }
+        ChangeAllMaterials(action, (_, y, _) => y == layerY);
     }
 
-    public void ChangeAllProducersLinkedToConsumerMaterials(int consumerX, int consumerY, int consumerZ, Action<MaterialManager> action)
+    private void ChangeMaterialsOfLayersBelow(Action<MaterialManager> action, int layerY)
     {
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                for (int k = 0; k < depth; k++)
-                {
-                    if (elementGrid[i, j, k].consumerCoords.Contains(new Vector3Int(consumerX, consumerY, consumerZ)))
-                    {
-                        ChangeMaterial(i, j, k, action);
-                    }
-                }
-            }
-        }
+        ChangeAllMaterials(action, (_, y, _) => y < layerY);
     }
 
-    public void ChangeAllConsumersMaterials(Action<MaterialManager> action)
+    private void ChangeMaterialsOfLayersAbove(Action<MaterialManager> action, int layerY)
     {
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                for (int k = 0; k < depth; k++)
-                {
-                    if (consumersGrid[i, j, k] != null)
-                    {
-                        ChangeMaterial(i, j, k, action);
-                    }
-                }
-            }
-        }
+        ChangeAllMaterials(action, (_, y, _) => y > layerY);
     }
 
-    public void MakeLayersAboveInvisible(int lastVisibleY) //TODO: Improve this to make layer right above transparent, and layers below obvious
+    private void ChangeAllConsumersUnderMaterials(int layerY, Action<MaterialManager> action)
     {
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = lastVisibleY + 1; j < height; j++)
-            {
-                for (int k = 0; k < depth; k++)
-                {
-                    GameObject gameObject = instancesGrid[i, j, k];
-                    if (gameObject != null)
-                    {
-                        gameObject.GetComponentInChildren<Renderer>().enabled = false;
-                    }
-                }
-            }
-        }
+        ChangeAllMaterials(action, (x, y, z) => y < layerY && consumersGrid[x, y, z] != null);
     }
 
-    public void MakeLayerVisible(int y)
+    private void ChangeAllProducersUnderMaterials(int layerY, Action<MaterialManager> action)
     {
-        for (int i = 0; i < width; i++)
-        {
-            for (int k = 0; k < depth; k++)
-            {
-                GameObject gameObject = instancesGrid[i, y, k];
-                if (gameObject != null)
-                {
-                    gameObject.GetComponentInChildren<Renderer>().enabled = true;
-                }
-            }
-        }
+        ChangeAllMaterials(action, (x, y, z) => y < layerY && producersGrid[x, y, z] != null);
     }
 
-    public void MakeAllLayersVisible()
+    private void ChangeAllConsumersSameLayerMaterials(int layerY, Action<MaterialManager> action)
     {
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                for (int k = 0; k < depth; k++)
-                {
-                    GameObject gameObject = instancesGrid[i, j, k];
-                    if (gameObject != null)
-                    {
-                        gameObject.GetComponentInChildren<Renderer>().enabled = true;
-                    }
-                }
-            }
-        }
+        ChangeAllMaterials(action, (x, y, z) => y == layerY && consumersGrid[x, y, z] != null);
+    }
+
+    private void ChangeAllProducersSameLayerMaterials(int layerY, Action<MaterialManager> action)
+    {
+        ChangeAllMaterials(action, (x, y, z) => y == layerY && producersGrid[x, y, z] != null);
+    }
+
+    private void ChangeAllLinkedConsumersUnderMaterials(int layerY, int producerX, int producerY, int producerZ, Action<MaterialManager> action)
+    {
+        ChangeAllMaterials(action, (x, y, z) => y < layerY && elementGrid[producerX, producerY, producerZ].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(x, y, z)));
+    }
+
+    private void ChangeAllLinkedConsumersSameLayerMaterials(int layerY, int producerX, int producerY, int producerZ, Action<MaterialManager> action)
+    {
+        ChangeAllMaterials(action, (x, y, z) => y == layerY && elementGrid[producerX, producerY, producerZ].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(x, y, z)));
+    }
+
+    private void ChangeAllLinkedProducersUnderMaterials(int layerY, int consumerX, int consumerY, int consumerZ, Action<MaterialManager> action)
+    {
+        ChangeAllMaterials(action, (x, y, z) => y < layerY && elementGrid[x, y, z].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(consumerX, consumerY, consumerZ)));
+    }
+
+    private void ChangeAllLinkedProducersSameLayerMaterials(int layerY, int consumerX, int consumerY, int consumerZ, Action<MaterialManager> action)
+    {
+        ChangeAllMaterials(action, (x, y, z) => y == layerY && elementGrid[x, y, z].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(consumerX, consumerY, consumerZ)));
     }
 
     public void Save(BinaryWriter writer)
@@ -276,9 +263,17 @@ public class CubeGrid : MonoBehaviour
             {
                 producersGrid[x, y, z] = gameObject;
             }
+            else
+            {
+                producersGrid[x, y, z] = null;
+            }
             if (gameObject.GetComponentInChildren<SignalConsumer>() != null)
             {
                 consumersGrid[x, y, z] = gameObject;
+            }
+            else
+            {
+                consumersGrid[x, y, z] = null;
             }
             element.consumerCoords.ForEach(coord =>
             {
@@ -288,11 +283,16 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
+    private bool IsInBounds(int x, int y, int z)
+    {
+        return x >= 0 && x < width && y >= 0 && y < height && z >= 0 && z < depth;
+    }
+
     public class CubeGridElement
     {
         public Rotation rotation;
         public int prefabIndex;
-        public List<Vector3Int> consumerCoords; //TODO: Encapsulate and make sure coords are not laready there
+        public List<Vector3Int> consumerCoords;
 
         public CubeGridElement(Rotation rotation, int prefabIndex)
         {

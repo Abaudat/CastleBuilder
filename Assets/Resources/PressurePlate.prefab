@@ -391,6 +391,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   consumers: []
+  reactivationDelay: 1
 --- !u!114 &2526651163429264907
 MonoBehaviour:
   m_ObjectHideFlags: 0

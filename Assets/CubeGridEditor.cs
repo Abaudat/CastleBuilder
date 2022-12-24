@@ -59,6 +59,7 @@ public class CubeGridEditor : MonoBehaviour
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         ClearSignals();
+                        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
                     }
                 }
             }
@@ -102,7 +103,8 @@ public class CubeGridEditor : MonoBehaviour
             {
                 if (Input.mouseScrollDelta.y != 0)
                 {
-                    editCameraComponent.orthographicSize = Mathf.Clamp(editCameraComponent.orthographicSize - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
+                    float newY = Mathf.Clamp(editCameraComponent.transform.position.y - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
+                    editCameraComponent.transform.position = new Vector3(editCameraComponent.transform.position.x, newY, editCameraComponent.transform.position.z);
                 }
             }
 
@@ -125,13 +127,29 @@ public class CubeGridEditor : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
-                ChangeCurrentCell(currentX, currentY + 1, currentZ);
-                cubeGrid.MakeLayerVisible(currentY);
+                ChangeLayer(currentY + 1);
+                if (isEditingSignals)
+                {
+                    cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                }
+                else
+                {
+                    ChangeCurrentCell(currentX, currentY, currentZ);
+                    cubeGrid.SetPlacementModeMaterials(currentY);
+                }
             }
             else if (Input.GetKeyDown(KeyCode.F))
             {
-                ChangeCurrentCell(currentX, currentY - 1, currentZ);
-                cubeGrid.MakeLayersAboveInvisible(currentY);
+                ChangeLayer(currentY - 1);
+                if (isEditingSignals)
+                {
+                    cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                }
+                else
+                {
+                    ChangeCurrentCell(currentX, currentY, currentZ);
+                    cubeGrid.SetPlacementModeMaterials(currentY);
+                }
             }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -157,15 +175,9 @@ public class CubeGridEditor : MonoBehaviour
                     if (producer != null)
                     {
                         cubeGrid.AddConsumerToProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.HighlightLinked());
-                        cubeGrid.ChangeMaterial(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, k => k.Select());
                     } else if (consumer != null)
                     {
-                        cubeGrid.ChangeMaterial(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, k => k.HighlightSignal());
                         currentSignalConsumerCoords = new Vector3Int(x, y, z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.Select());
-                        cubeGrid.ChangeAllProducersMaterials(x => x.HighlightUnlinked());
-                        cubeGrid.ChangeAllProducersLinkedToConsumerMaterials(x, y, z, k => k.HighlightLinked());
                     }
                     else
                     {
@@ -176,16 +188,10 @@ public class CubeGridEditor : MonoBehaviour
                     if (consumer != null)
                     {
                         cubeGrid.AddConsumerToProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.HighlightLinked());
-                        cubeGrid.ChangeMaterial(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z, k => k.Select());
                     }
                     else if (producer != null)
                     {
-                        cubeGrid.ChangeMaterial(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z, k => k.HighlightSignal());
                         currentSignalProducerCoords = new Vector3Int(x, y, z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.Select());
-                        cubeGrid.ChangeAllConsumersMaterials(x => x.HighlightUnlinked());
-                        cubeGrid.ChangeAllConsumersLinkedToProducerMaterials(x, y, z, k => k.HighlightLinked());
                     }
                     else
                     {
@@ -197,22 +203,17 @@ public class CubeGridEditor : MonoBehaviour
                     if (producer != null)
                     {
                         currentSignalProducerCoords = new Vector3Int(x, y, z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.Select());
-                        cubeGrid.ChangeAllConsumersMaterials(x => x.HighlightUnlinked());
-                        cubeGrid.ChangeAllConsumersLinkedToProducerMaterials(x, y, z, k => k.HighlightLinked());
                     }
                     else if (consumer != null)
                     {
                         currentSignalConsumerCoords = new Vector3Int(x, y, z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.Select());
-                        cubeGrid.ChangeAllProducersMaterials(x => x.HighlightUnlinked());
-                        cubeGrid.ChangeAllProducersLinkedToConsumerMaterials(x, y, z, k => k.HighlightLinked());
                     }
                     else
                     {
                         ClearSignals();
                     }
                 }
+                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
             }
         }
     }
@@ -234,8 +235,6 @@ public class CubeGridEditor : MonoBehaviour
                     if (producer != null && cubeGrid.ProducerContainsConsumer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z))
                     {
                         cubeGrid.RemoveConsumerFromProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.HighlightUnlinked());
-                        cubeGrid.ChangeMaterial(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, k => k.Select());
                     }
                     else
                     {
@@ -247,8 +246,6 @@ public class CubeGridEditor : MonoBehaviour
                     if (consumer != null && cubeGrid.ProducerContainsConsumer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z))
                     {
                         cubeGrid.RemoveConsumerFromProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
-                        cubeGrid.ChangeMaterial(x, y, z, k => k.HighlightUnlinked());
-                        cubeGrid.ChangeMaterial(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z, k => k.Select());
                     }
                     else
                     {
@@ -259,6 +256,7 @@ public class CubeGridEditor : MonoBehaviour
                 {
                     ClearSignals();
                 }
+                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
             }
         }
     }
@@ -267,7 +265,6 @@ public class CubeGridEditor : MonoBehaviour
     {
         currentSignalConsumerCoords = null;
         currentSignalProducerCoords = null;
-        cubeGrid.ChangeAllSignalsMaterials(x => x.HighlightSignal());
     }
 
     private void ChangeCellToHovered()
@@ -341,12 +338,11 @@ public class CubeGridEditor : MonoBehaviour
         editPanel.SetActive(true);
         editCamera.SetActive(true);
         GeneratePhantom();
-        cubeGrid.MakeLayersAboveInvisible(currentY);
+        cubeGrid.SetPlacementModeMaterials(currentY);
     }
 
     public void StopEditing()
     {
-        cubeGrid.MakeAllLayersVisible();
         cubeGrid.ChangeAllMaterials(x => x.ResetMaterial());
         isEditing = false;
         editPanel.SetActive(false);
@@ -359,7 +355,7 @@ public class CubeGridEditor : MonoBehaviour
         isEditingSignals = true;
         DestroyPhantom();
         cubeGrid.ChangeAllMaterials(x => x.Shadow());
-        cubeGrid.ChangeAllSignalsMaterials(x => x.HighlightSignal());
+        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
     }
 
     public void StopEditingSignals()
@@ -368,7 +364,7 @@ public class CubeGridEditor : MonoBehaviour
         currentSignalConsumerCoords = null;
         currentSignalProducerCoords = null;
         GeneratePhantom();
-        cubeGrid.ChangeAllMaterials(x => x.ResetMaterial());
+        cubeGrid.SetPlacementModeMaterials(currentY);
     }
 
     private void GeneratePhantom()
@@ -383,6 +379,14 @@ public class CubeGridEditor : MonoBehaviour
         if (phantomCube != null)
         {
             Destroy(phantomCube);
+        }
+    }
+
+    public void ChangeLayer(int newY)
+    {
+        if (newY >= 0 && newY < cubeGrid.height)
+        {
+            currentY = newY;
         }
     }
 

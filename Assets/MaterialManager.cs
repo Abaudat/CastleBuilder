@@ -42,4 +42,29 @@ public class MaterialManager : MonoBehaviour
     {
         renderer.material = materialDatabase.signalUnlinkedConsumerMaterial;
     }
+
+    public void HighlightSignalUnder()
+    {
+        renderer.material = materialDatabase.signalHighlightUnderMaterial;
+    }
+
+    public void HighlightLinkedUnder()
+    {
+        renderer.material = materialDatabase.signalLinkedUnder;
+    }
+
+    public void HighlightUnlinkedUnder()
+    {
+        renderer.material = materialDatabase.signalUnlinkedUnder;
+    }
+
+    public void Transparent()
+    {
+        renderer.material = materialDatabase.transparentMaterial;
+    }
+
+    public void Invisible()
+    {
+        renderer.material = materialDatabase.invisibleMaterial;
+    }
 }
