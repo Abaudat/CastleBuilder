@@ -4689,6 +4689,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   editCamera: {fileID: 367637228}
   editPanel: {fileID: 1314030588}
+  editLayerPlanePrefab: {fileID: 6944661007206491635, guid: 164b6807f2d512a4293bfc3a10f68f98,
+    type: 3}
   cubeGrid: {fileID: 1761735624}
   eventSystem: {fileID: 973657779}
   phantomMaterial: {fileID: 2100000, guid: f5e3b42032b2aae4a85291b5a98e1513, type: 2}

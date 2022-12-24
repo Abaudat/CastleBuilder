@@ -1,14 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
-using UnityEngine.UI;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public GameObject editCamera, editPanel;
+    public GameObject editCamera, editPanel, editLayerPlanePrefab;
     public CubeGrid cubeGrid;
     public EventSystem eventSystem;
     public Material phantomMaterial;
@@ -26,7 +23,7 @@ public class CubeGridEditor : MonoBehaviour
     private Camera editCameraComponent;
     private PlayManager playManager;
     private int currentX, currentY, currentZ;
-    private GameObject phantomCube;
+    private GameObject phantomCube, editLayerPlane;
     private bool isEditing, isEditingSignals;
     private int currentPrefabIndex = 1;
     private Rotation currentRotation = Rotation.NORTH;
@@ -338,6 +335,7 @@ public class CubeGridEditor : MonoBehaviour
         editPanel.SetActive(true);
         editCamera.SetActive(true);
         GeneratePhantom();
+        editLayerPlane = Instantiate(editLayerPlanePrefab, new Vector3(4.5f, currentY - 0.49f, 4.5f), Quaternion.identity);
         cubeGrid.SetPlacementModeMaterials(currentY);
     }
 
@@ -348,6 +346,7 @@ public class CubeGridEditor : MonoBehaviour
         editPanel.SetActive(false);
         editCamera.SetActive(false);
         DestroyPhantom();
+        Destroy(editLayerPlane);
     }
 
     public void StartEditingSignals()
@@ -387,6 +386,7 @@ public class CubeGridEditor : MonoBehaviour
         if (newY >= 0 && newY < cubeGrid.height)
         {
             currentY = newY;
+            editLayerPlane.transform.position = new Vector3(4.5f, currentY - 0.49f, 4.5f);
         }
     }
 
