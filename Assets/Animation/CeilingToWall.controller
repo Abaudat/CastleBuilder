@@ -46,7 +46,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 620a0a83acf395543944b1e4dcb3f3f1, type: 2}
+  m_Motion: {fileID: 7400000, guid: 02e602c9455caec4aa6c278ab1adfb05, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -110,7 +110,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: AnimationController
+  m_Name: CeilingToWall
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: trigger

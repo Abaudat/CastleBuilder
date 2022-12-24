@@ -265,6 +265,12 @@ public class CubeGrid : MonoBehaviour
 
     public void PrepareForPlay()
     {
+        RecreateAllElements();
+        EnableAllRigidbodies();
+    }
+
+    public void RecreateAllElements()
+    {
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -276,7 +282,6 @@ public class CubeGrid : MonoBehaviour
             }
         }
         RecomputeSignalNetwork();
-        EnableAllRigidbodies();
     }
 
     private void RecreateSameElement(int x, int y, int z)

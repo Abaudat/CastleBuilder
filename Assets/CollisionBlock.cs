@@ -4,7 +4,7 @@ public abstract class CollisionBlock : MonoBehaviour
 {
     protected PlayManager playManager;
 
-    private void Awake()
+    protected void Awake()
     {
         playManager = FindObjectOfType<PlayManager>();
     }

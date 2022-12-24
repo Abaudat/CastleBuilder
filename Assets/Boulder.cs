@@ -7,8 +7,9 @@ public class Boulder : CollisionBlock
 
     private new Rigidbody rigidbody;
 
-    private void Awake()
+    private new void Awake()
     {
+        base.Awake();
         rigidbody = GetComponent<Rigidbody>();
     }
 

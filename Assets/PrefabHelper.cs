@@ -21,8 +21,10 @@ public class PrefabHelper
             case 7:
                 return Resources.Load("PressurePlate") as GameObject;
             case 8:
-                return Resources.Load("RotatingWall") as GameObject;
+                return Resources.Load("WallToCeiling") as GameObject;
             case 9:
+                return Resources.Load("CeilingToWall") as GameObject;
+            case 12:
                 return Resources.Load("Boulder") as GameObject;
             default:
                 return null;

@@ -310,6 +310,7 @@ public class CubeGridEditor : MonoBehaviour
         if (header == 0)
         {
             cubeGrid.Load(reader);
+            cubeGrid.SetPlacementModeMaterials(currentY);
         }
         else
         {
@@ -320,14 +321,12 @@ public class CubeGridEditor : MonoBehaviour
     public void StartExploring()
     {
         StopEditing();
-        cubeGrid.PrepareForPlay();
         playManager.StartExploring(currentX, currentY, currentZ);
     }
 
     public void StartPlaying()
     {
         StopEditing();
-        cubeGrid.PrepareForPlay();
         playManager.StartPlaying();
     }
 
@@ -339,7 +338,7 @@ public class CubeGridEditor : MonoBehaviour
         rightWall.SetActive(false);
         belowWall.SetActive(false);
         roof.SetActive(false);
-        cubeGrid.PrepareForPlay();
+        cubeGrid.RecreateAllElements();
         GeneratePhantom();
         editLayerPlane = Instantiate(editLayerPlanePrefab, new Vector3(4.5f, currentY - 0.49f, 4.5f), Quaternion.identity);
         cubeGrid.SetPlacementModeMaterials(currentY);

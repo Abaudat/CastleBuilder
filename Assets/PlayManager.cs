@@ -6,6 +6,7 @@ public class PlayManager : MonoBehaviour
     public GameObject playerPrefab, winPanel, losePanel;
 
     private CubeGridEditor cubeGridEditor;
+    private CubeGrid cubeGrid;
 
     bool isExploring = false;
     bool isPlaying = false;
@@ -14,6 +15,7 @@ public class PlayManager : MonoBehaviour
     private void Awake()
     {
         cubeGridEditor = FindObjectOfType<CubeGridEditor>();
+        cubeGrid = FindObjectOfType<CubeGrid>();
     }
 
     private void Update()
@@ -36,12 +38,14 @@ public class PlayManager : MonoBehaviour
 
     public void StartExploring(int x, int y, int z)
     {
+        cubeGrid.PrepareForPlay();
         isExploring = true;
         exploringPlayer = Instantiate(playerPrefab, new Vector3(x, y, z), Quaternion.identity);
     }
 
     public void StartPlaying()
     {
+        cubeGrid.PrepareForPlay();
         if (exploringPlayer != null)
         {
             Destroy(exploringPlayer);
