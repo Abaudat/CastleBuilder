@@ -24,6 +24,10 @@ public class PrefabHelper
                 return Resources.Load("WallToCeiling") as GameObject;
             case 9:
                 return Resources.Load("CeilingToWall") as GameObject;
+            case 10:
+                return Resources.Load("WallToFloor") as GameObject;
+            case 11:
+                return Resources.Load("FloorToWall") as GameObject;
             case 12:
                 return Resources.Load("Boulder") as GameObject;
             default:
