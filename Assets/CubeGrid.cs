@@ -67,6 +67,18 @@ public class CubeGrid : MonoBehaviour
         RecreateElement(producerX, producerY, producerZ, elementGrid[producerX, producerY, producerZ]);
     }
 
+    public void RemoveConsumerFromProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
+    {
+        elementGrid[producerX, producerY, producerZ].RemoveConsumerCoord(consumerX, consumerY, consumerZ);
+        RecreateElement(producerX, producerY, producerZ, elementGrid[producerX, producerY, producerZ]);
+    }
+
+    public bool ProducerContainsConsumer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
+    {
+        CubeGridElement element = elementGrid[producerX, producerY, producerZ];
+        return element.consumerCoords.Contains(new Vector3Int(consumerX, consumerY, consumerZ));
+    }
+
     public bool IsElementEmpty(int x, int y, int z)
     {
         return elementGrid[x, y, z].IsEmpty();
@@ -315,6 +327,15 @@ public class CubeGrid : MonoBehaviour
             if (!consumerCoords.Contains(vector3Int))
             {
                 consumerCoords.Add(vector3Int);
+            }
+        }
+
+        public void RemoveConsumerCoord(int x, int y, int z)
+        {
+            Vector3Int vector3Int = new Vector3Int(x, y, z);
+            if (consumerCoords.Contains(vector3Int))
+            {
+                consumerCoords.Remove(vector3Int);
             }
         }
 

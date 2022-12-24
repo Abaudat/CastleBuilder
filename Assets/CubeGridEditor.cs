@@ -50,11 +50,11 @@ public class CubeGridEditor : MonoBehaviour
                 {
                     if (Input.GetKeyDown(KeyCode.Mouse0))
                     {
-                        SetSignalsToHovered();
+                        LinkSignals();
                     }
                     if (Input.GetKeyDown(KeyCode.Mouse1))
                     {
-                        //TODO: Unlink if existing link between currentProducer/currentConsumer and coords
+                        UnlinkSignals();
                     }
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
@@ -140,7 +140,7 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
-    private void SetSignalsToHovered()
+    private void LinkSignals()
     {
         Vector3Int? cursorCell = GetCursorCell();
         if (cursorCell.HasValue)
@@ -212,6 +212,52 @@ public class CubeGridEditor : MonoBehaviour
                     {
                         ClearSignals();
                     }
+                }
+            }
+        }
+    }
+
+    private void UnlinkSignals()
+    {
+        Vector3Int? cursorCell = GetCursorCell();
+        if (cursorCell.HasValue)
+        {
+            int x = cursorCell.Value.x;
+            int y = cursorCell.Value.y;
+            int z = cursorCell.Value.z;
+            if (x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
+            {
+                SignalProducer producer = cubeGrid.GetInstance(x, y, z).TryGetComponentInChildren<SignalProducer>();
+                SignalConsumer consumer = cubeGrid.GetInstance(x, y, z).TryGetComponentInChildren<SignalConsumer>();
+                if (currentSignalConsumerCoords.HasValue)
+                {
+                    if (producer != null && cubeGrid.ProducerContainsConsumer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z))
+                    {
+                        cubeGrid.RemoveConsumerFromProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
+                        cubeGrid.ChangeMaterial(x, y, z, k => k.HighlightUnlinked());
+                        cubeGrid.ChangeMaterial(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, k => k.Select());
+                    }
+                    else
+                    {
+                        ClearSignals();
+                    }
+                }
+                else if (currentSignalProducerCoords.HasValue)
+                {
+                    if (consumer != null && cubeGrid.ProducerContainsConsumer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z))
+                    {
+                        cubeGrid.RemoveConsumerFromProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
+                        cubeGrid.ChangeMaterial(x, y, z, k => k.HighlightUnlinked());
+                        cubeGrid.ChangeMaterial(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z, k => k.Select());
+                    }
+                    else
+                    {
+                        ClearSignals();
+                    }
+                }
+                else
+                {
+                    ClearSignals();
                 }
             }
         }
@@ -319,6 +365,8 @@ public class CubeGridEditor : MonoBehaviour
     public void StopEditingSignals()
     {
         isEditingSignals = false;
+        currentSignalConsumerCoords = null;
+        currentSignalProducerCoords = null;
         GeneratePhantom();
         cubeGrid.ChangeAllMaterials(x => x.ResetMaterial());
     }
