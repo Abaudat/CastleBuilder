@@ -327,7 +327,7 @@ public class CubeGridEditor : MonoBehaviour
     public void StartPlaying()
     {
         StopEditing();
-        playManager.StartPlaying();
+        playManager.StartValidating();
     }
 
     public void StartEditing()

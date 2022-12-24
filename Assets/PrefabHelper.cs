@@ -32,6 +32,10 @@ public class PrefabHelper
                 return Resources.Load("Boulder") as GameObject;
             case 13:
                 return Resources.Load("StickyPressurePlate") as GameObject;
+            case 14:
+                return Resources.Load("InvertedRamp") as GameObject;
+            case 15:
+                return Resources.Load("InvertedCorner") as GameObject;
             default:
                 return null;
         }

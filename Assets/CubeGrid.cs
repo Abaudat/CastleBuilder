@@ -239,10 +239,11 @@ public class CubeGrid : MonoBehaviour
             {
                 for (int k = 0; k < depth; k++)
                 {
-                    RecreateSameElement(i, j, k);
+                    RecreateElement(i, j, k);
                 }
             }
         }
+        RecomputeSignalNetwork();
     }
 
     private void EnableAllRigidbodies()
@@ -344,15 +345,6 @@ public class CubeGrid : MonoBehaviour
             }
         }
         RecomputeSignalNetwork();
-    }
-
-    private void RewireToConsumers(CubeGridElement element)
-    {
-        element.consumerCoords.ForEach(coord =>
-        {
-            SignalConsumer consumer = GetInstance(coord.x, coord.y, coord.z).GetComponentInChildren<SignalConsumer>();
-            gameObject.GetComponentInChildren<SignalProducer>().consumers.Add(consumer);
-        });
     }
 
     private void RecomputeSignalNetwork()

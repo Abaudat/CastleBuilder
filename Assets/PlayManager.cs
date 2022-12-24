@@ -9,7 +9,7 @@ public class PlayManager : MonoBehaviour
     private CubeGrid cubeGrid;
 
     bool isExploring = false;
-    bool isPlaying = false;
+    bool isValidating = false;
     GameObject exploringPlayer;
 
     private void Awake()
@@ -27,7 +27,7 @@ public class PlayManager : MonoBehaviour
                 StopExploring();
             }
         }
-        if (isPlaying)
+        if (isValidating)
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -43,14 +43,14 @@ public class PlayManager : MonoBehaviour
         exploringPlayer = Instantiate(playerPrefab, new Vector3(x, y, z), Quaternion.identity);
     }
 
-    public void StartPlaying()
+    public void StartValidating()
     {
         cubeGrid.PrepareForPlay();
         if (exploringPlayer != null)
         {
             Destroy(exploringPlayer);
         }
-        isPlaying = true;
+        isValidating = true;
         exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
     }
 
@@ -63,15 +63,18 @@ public class PlayManager : MonoBehaviour
 
     public void StopPlaying()
     {
-        isPlaying = false;
+        isValidating = false;
         Destroy(exploringPlayer);
         cubeGridEditor.StartEditing();
     }
 
     public void Success()
     {
-        exploringPlayer.GetComponent<PlayerMover>().canMove = false;
-        winPanel.SetActive(true);
+        if (isValidating)
+        {
+            exploringPlayer.GetComponent<PlayerMover>().canMove = false;
+            winPanel.SetActive(true);
+        }
     }
 
     public void Die()
