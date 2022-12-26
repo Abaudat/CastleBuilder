@@ -11,15 +11,6 @@ public class CubeGridEditor : MonoBehaviour
     public Material phantomMaterial;
     public TMP_InputField exportInput, importInput;
 
-    [SerializeField, Range(0f, 100f)]
-    float cameraSpeed = 10f;
-    [SerializeField, Range(0f, 100f)]
-    float cameraZoomSpeed = 50f;
-    [SerializeField, Range(0f, 10f)]
-    float cameraMaxZoom = 0.2f;
-    [SerializeField, Range(0f, 10f)]
-    float cameraMinZoom = 5f;
-
     private Camera editCameraComponent;
     private PlayManager playManager;
     private int currentX, currentY, currentZ;
@@ -95,18 +86,6 @@ public class CubeGridEditor : MonoBehaviour
                     StartExploring();
                 }
             }
-
-            if (!eventSystem.IsPointerOverGameObject())
-            {
-                if (Input.mouseScrollDelta.y != 0)
-                {
-                    float newY = Mathf.Clamp(editCameraComponent.transform.position.y - Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed, cameraMinZoom, cameraMaxZoom);
-                    editCameraComponent.transform.position = new Vector3(editCameraComponent.transform.position.x, newY, editCameraComponent.transform.position.z);
-                }
-            }
-
-            editCamera.transform.Translate(cameraSpeed * Time.deltaTime * new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0));
-
             if (Input.GetKeyDown(KeyCode.R))
             {
                 ChangeLayer(currentY + 1);

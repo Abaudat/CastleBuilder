@@ -1,0 +1,2 @@
+* Camera rotation and moving with mouse
+* Clear all button
