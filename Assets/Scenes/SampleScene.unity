@@ -2647,12 +2647,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f640c89f19ad15469e31f15534de435, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rightWall: {fileID: 1754592211}
+  aboveWall: {fileID: 339111696}
+  leftWall: {fileID: 1364569222}
+  belowWall: {fileID: 1081328591}
+  castleCenter: {fileID: 639067085}
+  transparentMat: {fileID: 2100000, guid: ee921c0b16b7cbd41a8085e3c4ff1825, type: 2}
+  wallMat: {fileID: 2100000, guid: 55c0be046bfdffd4597c2b791c100991, type: 2}
   cameraSpeed: 10
-  cameraZoomSpeed: 50
+  cameraZoomSpeed: 75
   cameraMaxZoom: 10
   cameraMinZoom: 1.5
-  cameraRangeBottomLeft: {x: -1, y: -3}
-  cameraRangeTopRight: {x: 10, y: 10}
+  cameraRotateSpeedX: 10
+  cameraRotateSpeedY: 50
+  cameraRangeBottomLeft: {x: -4, y: -4}
+  cameraRangeTopRight: {x: 14, y: 14}
+  cameraRotationMin: 25
+  cameraRotationMax: 90
+  cameraMoveMarginSize: 10
 --- !u!1 &393582161
 GameObject:
   m_ObjectHideFlags: 0
@@ -3376,7 +3388,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh164216
+  m_Name: pb_Mesh20500
   serializedVersion: 11
   m_SubMeshes:
   - serializedVersion: 2
@@ -8912,14 +8924,13 @@ MonoBehaviour:
   editPanel: {fileID: 1314030588}
   editLayerPlanePrefab: {fileID: 6944661007206491635, guid: 164b6807f2d512a4293bfc3a10f68f98,
     type: 3}
-  rightWall: {fileID: 1754592207}
-  belowWall: {fileID: 1081328587}
   roof: {fileID: 494346925}
   cubeGrid: {fileID: 1761735624}
   eventSystem: {fileID: 973657779}
   phantomMaterial: {fileID: 2100000, guid: f5e3b42032b2aae4a85291b5a98e1513, type: 2}
   exportInput: {fileID: 871255987}
   importInput: {fileID: 1654655949}
+  editCameraMover: {fileID: 367637232}
 --- !u!1 &1286533420
 GameObject:
   m_ObjectHideFlags: 0
@@ -13611,7 +13622,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh164124
+  m_Name: pb_Mesh20408
   serializedVersion: 11
   m_SubMeshes:
   - serializedVersion: 2
@@ -14275,7 +14286,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh164768
+  m_Name: pb_Mesh21066
   serializedVersion: 11
   m_SubMeshes:
   - serializedVersion: 2

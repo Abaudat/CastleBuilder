@@ -5,11 +5,12 @@ using TMPro;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public GameObject editCamera, editPanel, editLayerPlanePrefab, rightWall, belowWall, roof;
+    public GameObject editCamera, editPanel, editLayerPlanePrefab, roof;
     public CubeGrid cubeGrid;
     public EventSystem eventSystem;
     public Material phantomMaterial;
     public TMP_InputField exportInput, importInput;
+    public EditCameraMover editCameraMover;
 
     private Camera editCameraComponent;
     private PlayManager playManager;
@@ -299,8 +300,6 @@ public class CubeGridEditor : MonoBehaviour
         isEditing = true;
         editPanel.SetActive(true);
         editCamera.SetActive(true);
-        rightWall.SetActive(false);
-        belowWall.SetActive(false);
         roof.SetActive(false);
         cubeGrid.RecreateAllElements();
         GeneratePhantom();
@@ -314,8 +313,7 @@ public class CubeGridEditor : MonoBehaviour
         isEditing = false;
         editPanel.SetActive(false);
         editCamera.SetActive(false);
-        rightWall.SetActive(true);
-        belowWall.SetActive(true);
+        editCameraMover.MakeAllWallsVisible();
         roof.SetActive(true);
         DestroyPhantom();
         Destroy(editLayerPlane);
