@@ -2949,6 +2949,7 @@ MonoBehaviour:
   transparentMat: {fileID: 2100000, guid: ee921c0b16b7cbd41a8085e3c4ff1825, type: 2}
   wallMat: {fileID: 2100000, guid: 55c0be046bfdffd4597c2b791c100991, type: 2}
   eventSystem: {fileID: 973657779}
+  cubeGridEditor: {fileID: 1255153566}
   cameraSpeed: 10
   cameraZoomSpeed: 75
   cameraMaxZoom: 10
@@ -5623,7 +5624,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.88049316, y: 0}
+  m_AnchoredPosition: {x: 0.88061523, y: 0}
   m_SizeDelta: {x: -22.8943, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &668956319
@@ -10072,7 +10073,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -820.95496, y: 0.000015258789}
+  m_AnchoredPosition: {x: -820.9551, y: 0.000030517578}
   m_SizeDelta: {x: -1661.9099, y: -20.000023}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1308203258

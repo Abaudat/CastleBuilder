@@ -249,6 +249,11 @@ public class CubeGridEditor : MonoBehaviour
         return null;
     }
 
+    public int getCurrentY()
+    {
+        return currentY;
+    }
+
     public void ClearAll()
     {
         cubeGrid.ClearAll();

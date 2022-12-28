@@ -7,6 +7,7 @@ public class EditCameraMover : MonoBehaviour
     public Transform castleCenter;
     public Material transparentMat, wallMat;
     public EventSystem eventSystem;
+    public CubeGridEditor cubeGridEditor;
 
     [SerializeField, Range(0f, 100f)]
     float cameraSpeed = 10f;
@@ -28,6 +29,7 @@ public class EditCameraMover : MonoBehaviour
     float cameraMoveMarginSize = 10f;
 
     Vector2? previousMousePos;
+    Vector3 rotationPivot;
 
     void Update()
     {
@@ -36,9 +38,23 @@ public class EditCameraMover : MonoBehaviour
         if (Input.GetKey(KeyCode.Mouse2)) {
             if (previousMousePos.HasValue)
             {
-                float xRotateIntent = Mathf.Clamp(transform.rotation.eulerAngles.x - (Input.mousePosition.y - previousMousePos.Value.y) * Time.deltaTime * cameraRotateSpeedX, cameraRotationMin, cameraRotationMax);
-                transform.rotation = Quaternion.Euler(xRotateIntent, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
-                transform.RotateAround(castleCenter.position, Vector3.up, (Input.mousePosition.x - previousMousePos.Value.x) * Time.deltaTime * cameraRotateSpeedY);
+                float xRotAngle = -(Input.mousePosition.y - previousMousePos.Value.y) * Time.deltaTime * cameraRotateSpeedX;
+                if (transform.eulerAngles.x + xRotAngle >= cameraRotationMin && transform.eulerAngles.x + xRotAngle <= cameraRotationMax)
+                {
+                    transform.RotateAround(rotationPivot, transform.right, xRotAngle);
+                }
+                transform.RotateAround(rotationPivot, Vector3.up, (Input.mousePosition.x - previousMousePos.Value.x) * Time.deltaTime * cameraRotateSpeedY);
+                transform.rotation = Quaternion.Euler(
+                    Mathf.Clamp((transform.eulerAngles.x + 360) % 360, cameraRotationMin, cameraRotationMax), 
+                    transform.eulerAngles.y,
+                    transform.eulerAngles.z);
+            }
+            else
+            {
+                Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
+                Plane plane = new Plane(Vector3.up, Vector3.up * cubeGridEditor.getCurrentY());
+                plane.Raycast(ray, out float enter);
+                rotationPivot = ray.GetPoint(enter);
             }
             previousMousePos = Input.mousePosition;
         }
