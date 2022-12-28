@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayManager : MonoBehaviour
 {
     public Transform playerSpawnPosition;
-    public GameObject playerPrefab, winPanel, losePanel;
+    public GameObject playerPrefab, winPanel, losePanel, editCamera;
 
     private CubeGridEditor cubeGridEditor;
     private CubeGrid cubeGrid;
@@ -38,22 +38,30 @@ public class PlayManager : MonoBehaviour
 
     public void StartExploring(int x, int y, int z)
     {
-        cubeGrid.PrepareForPlay();
-        isExploring = true;
-        exploringPlayer = Instantiate(playerPrefab, new Vector3(x, y, z), Quaternion.identity);
-        Cursor.visible = false;
+        if (!isExploring)
+        {
+            editCamera.SetActive(false);
+            cubeGrid.PrepareForPlay();
+            isExploring = true;
+            exploringPlayer = Instantiate(playerPrefab, new Vector3(x, y, z), Quaternion.identity);
+            Cursor.visible = false;
+        }
     }
 
     public void StartValidating()
     {
-        cubeGrid.PrepareForPlay();
-        if (exploringPlayer != null)
+        if (!isValidating)
         {
-            Destroy(exploringPlayer);
+            editCamera.SetActive(false);
+            cubeGrid.PrepareForPlay();
+            if (exploringPlayer != null)
+            {
+                Destroy(exploringPlayer);
+            }
+            isValidating = true;
+            exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
+            Cursor.visible = false;
         }
-        isValidating = true;
-        exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
-        Cursor.visible = false;
     }
 
     public void StopExploring()
@@ -76,6 +84,7 @@ public class PlayManager : MonoBehaviour
     {
         if (isValidating)
         {
+            isValidating = false;
             exploringPlayer.GetComponent<PlayerMover>().canMove = false;
             winPanel.SetActive(true);
             Cursor.visible = true;
@@ -84,8 +93,12 @@ public class PlayManager : MonoBehaviour
 
     public void Die()
     {
-        exploringPlayer.GetComponent<PlayerMover>().canMove = false;
-        losePanel.SetActive(true);
-        Cursor.visible = true;
+        if (isValidating || isExploring)
+        {
+            isValidating = isExploring = false;
+            exploringPlayer.GetComponent<PlayerMover>().canMove = false;
+            losePanel.SetActive(true);
+            Cursor.visible = true;
+        }
     }
 }

@@ -26,7 +26,6 @@ public class CubeGridEditor : MonoBehaviour
     {
         playManager = FindObjectOfType<PlayManager>();
         editCameraComponent = editCamera.GetComponent<Camera>();
-        StartEditing();
     }
 
     private void Update()
@@ -250,6 +249,11 @@ public class CubeGridEditor : MonoBehaviour
         return null;
     }
 
+    public void ClearAll()
+    {
+        cubeGrid.ClearAll();
+    }
+
     public void ChangeCurrentPrefabIndex(int index)
     {
         currentPrefabIndex = index;
@@ -312,7 +316,6 @@ public class CubeGridEditor : MonoBehaviour
         cubeGrid.ChangeAllMaterials(x => x.ResetMaterial());
         isEditing = false;
         editPanel.SetActive(false);
-        editCamera.SetActive(false);
         editCameraMover.MakeAllWallsVisible();
         roof.SetActive(true);
         DestroyPhantom();

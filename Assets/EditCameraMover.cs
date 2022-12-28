@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class EditCameraMover : MonoBehaviour
 {
     public Renderer rightWall, aboveWall, leftWall, belowWall;
     public Transform castleCenter;
     public Material transparentMat, wallMat;
+    public EventSystem eventSystem;
 
     [SerializeField, Range(0f, 100f)]
     float cameraSpeed = 10f;
@@ -59,7 +61,11 @@ public class EditCameraMover : MonoBehaviour
             {
                 yMoveIntent = -1;
             }
-            float newY = Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed;
+            float newY = 0;
+            if (!eventSystem.IsPointerOverGameObject())
+            {
+                newY = Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed;
+            }
             Vector3 newPos = transform.position + Quaternion.Euler(0, transform.eulerAngles.y, 0) * new Vector3(xMoveIntent, 0, yMoveIntent) * cameraSpeed * Time.deltaTime;
             Vector3 clampedNewPos = new Vector3(
                 Mathf.Clamp(newPos.x, cameraRangeBottomLeft.x, cameraRangeTopRight.x),

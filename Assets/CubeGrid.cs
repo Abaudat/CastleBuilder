@@ -207,6 +207,21 @@ public class CubeGrid : MonoBehaviour
         ChangeAllMaterials(action, (x, y, z) => y == layerY && elementGrid[x, y, z].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(consumerX, consumerY, consumerZ)));
     }
 
+    public void ClearAll()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    SetElementEmpty(i, j, k);
+                }
+            }
+        }
+        RecomputeSignalNetwork();
+    }
+
     public void Save(BinaryWriter writer)
     {
         for (int i = 0; i < width; i++)
