@@ -2,6 +2,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.UI;
 
 public class CubeGridEditor : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class CubeGridEditor : MonoBehaviour
     public Material phantomMaterial;
     public TMP_InputField exportInput, importInput;
     public EditCameraMover editCameraMover;
+    public Slider floorSlider;
+    public TMP_Text floorText;
 
     private Camera editCameraComponent;
     private PlayManager playManager;
@@ -89,28 +92,10 @@ public class CubeGridEditor : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.R))
             {
                 ChangeLayer(currentY + 1);
-                if (isEditingSignals)
-                {
-                    cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
-                }
-                else
-                {
-                    ChangeCurrentCell(currentX, currentY, currentZ);
-                    cubeGrid.SetPlacementModeMaterials(currentY);
-                }
             }
             else if (Input.GetKeyDown(KeyCode.F))
             {
                 ChangeLayer(currentY - 1);
-                if (isEditingSignals)
-                {
-                    cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
-                }
-                else
-                {
-                    ChangeCurrentCell(currentX, currentY, currentZ);
-                    cubeGrid.SetPlacementModeMaterials(currentY);
-                }
             }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -365,7 +350,23 @@ public class CubeGridEditor : MonoBehaviour
         {
             currentY = newY;
             editLayerPlane.transform.position = new Vector3(4.5f, currentY - 0.49f, 4.5f);
+            floorSlider.value = newY;
+            floorText.text = (newY + 1).ToString();
+            if (isEditingSignals)
+            {
+                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+            }
+            else
+            {
+                ChangeCurrentCell(currentX, currentY, currentZ);
+                cubeGrid.SetPlacementModeMaterials(currentY);
+            }
         }
+    }
+
+    public void ChangeLayer(float newY)
+    {
+        ChangeLayer(Mathf.FloorToInt(newY+0.5f));
     }
 
     public void ChangeCurrentCell(int x, int y, int z)
