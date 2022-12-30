@@ -45,6 +45,7 @@ public class PlayManager : MonoBehaviour
             isExploring = true;
             exploringPlayer = Instantiate(playerPrefab, new Vector3(x, y, z), Quaternion.identity);
             Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
     }
 
@@ -61,6 +62,7 @@ public class PlayManager : MonoBehaviour
             isValidating = true;
             exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
             Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
     }
 
@@ -70,6 +72,7 @@ public class PlayManager : MonoBehaviour
         Destroy(exploringPlayer);
         cubeGridEditor.StartEditing();
         Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void StopPlaying()
@@ -78,6 +81,7 @@ public class PlayManager : MonoBehaviour
         Destroy(exploringPlayer);
         cubeGridEditor.StartEditing();
         Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void Success()
@@ -88,6 +92,7 @@ public class PlayManager : MonoBehaviour
             exploringPlayer.GetComponent<PlayerMover>().canMove = false;
             winPanel.SetActive(true);
             Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
         }
     }
 
@@ -99,6 +104,7 @@ public class PlayManager : MonoBehaviour
             exploringPlayer.GetComponent<PlayerMover>().canMove = false;
             losePanel.SetActive(true);
             Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
         }
     }
 }

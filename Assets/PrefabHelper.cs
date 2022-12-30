@@ -36,6 +36,10 @@ public class PrefabHelper
                 return Resources.Load("InvertedRamp") as GameObject;
             case 15:
                 return Resources.Load("InvertedCorner") as GameObject;
+            case 16:
+                return Resources.Load("WallToWall") as GameObject;
+            case 17:
+                return Resources.Load("StraightCorner") as GameObject;
             default:
                 return null;
         }

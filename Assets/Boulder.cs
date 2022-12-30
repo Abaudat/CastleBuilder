@@ -24,7 +24,7 @@ public class Boulder : CollisionBlock
         {
             if (!rollAudioSource.isPlaying)
             {
-                rollAudioSource.volume = (rigidbody.velocity.magnitude - 0.1f) / minKillVelocity;
+                rollAudioSource.volume = (rigidbody.velocity.magnitude - minKillVelocity) / (3 * minKillVelocity);
                 rollAudioSource.Play();
             }
         }
