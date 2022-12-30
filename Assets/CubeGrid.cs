@@ -58,10 +58,11 @@ public class CubeGrid : MonoBehaviour
         ReplaceElement(x, y, z, element);
     }
 
-    public void AddConsumerToProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
+    public bool AddConsumerToProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
     {
-        elementGrid[producerX, producerY, producerZ].AddConsumerCoord(consumerX, consumerY, consumerZ);
+        bool result = elementGrid[producerX, producerY, producerZ].AddConsumerCoord(consumerX, consumerY, consumerZ);
         RecomputeSignalNetwork();
+        return result;
     }
 
     public void RemoveConsumerFromProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
@@ -446,13 +447,15 @@ public class CubeGrid : MonoBehaviour
             return prefabIndex == 0;
         }
 
-        public void AddConsumerCoord(int x, int y, int z)
+        public bool AddConsumerCoord(int x, int y, int z)
         {
             Vector3Int vector3Int = new Vector3Int(x, y, z);
             if (!consumerCoords.Contains(vector3Int))
             {
                 consumerCoords.Add(vector3Int);
+                return true;
             }
+            return false;
         }
 
         public void RemoveConsumerCoord(int x, int y, int z)

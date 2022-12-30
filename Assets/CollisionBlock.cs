@@ -9,7 +9,7 @@ public abstract class CollisionBlock : MonoBehaviour
         playManager = FindObjectOfType<PlayManager>();
     }
 
-    private void OnCollisionEnter(Collision collision)
+    protected virtual void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.CompareTag("Player"))
         {

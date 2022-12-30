@@ -17,6 +17,7 @@ public class CubeGridEditor : MonoBehaviour
 
     private Camera editCameraComponent;
     private PlayManager playManager;
+    private SoundManager soundManager;
     private int currentX, currentY, currentZ;
     private GameObject phantomCube, editLayerPlane;
     private bool isEditing, isEditingSignals;
@@ -28,6 +29,7 @@ public class CubeGridEditor : MonoBehaviour
     private void Start()
     {
         playManager = FindObjectOfType<PlayManager>();
+        soundManager = FindObjectOfType<SoundManager>();
         editCameraComponent = editCamera.GetComponent<Camera>();
     }
 
@@ -64,12 +66,17 @@ public class CubeGridEditor : MonoBehaviour
                         if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
                         {
                             ChangeSelectedElement(currentPrefabIndex);
+                            soundManager.PlayBuildSound();
                         }
                     }
                     if (Input.GetKey(KeyCode.Mouse1))
                     {
-                        ChangeSelectedElement(0);
-                        GeneratePhantom();
+                        if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+                        {
+                            soundManager.PlayDestroySound();
+                            ChangeSelectedElement(0);
+                            GeneratePhantom();
+                        }
                     }
                 }
                 if (Input.GetKeyDown(KeyCode.E))
@@ -83,6 +90,7 @@ public class CubeGridEditor : MonoBehaviour
                     {
                         RotateCurrent();
                     }
+                    soundManager.PlayRotateSound();
                 }
                 else if (Input.GetKeyDown(KeyCode.P))
                 {
@@ -114,34 +122,58 @@ public class CubeGridEditor : MonoBehaviour
             int z = cursorCell.Value.z;
             if (x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
             {
-                SignalProducer producer = cubeGrid.GetInstance(x, y, z).TryGetComponentInChildren<SignalProducer>();
-                SignalConsumer consumer = cubeGrid.GetInstance(x, y, z).TryGetComponentInChildren<SignalConsumer>();
+                GameObject instance = cubeGrid.GetInstance(x, y, z);
+                SignalProducer producer = null;
+                SignalConsumer consumer = null;
+                if (instance != null)
+                {
+                    producer = instance.TryGetComponentInChildren<SignalProducer>();
+                    consumer = instance.TryGetComponentInChildren<SignalConsumer>();
+                }
                 if (currentSignalConsumerCoords.HasValue)
                 {
                     if (producer != null)
                     {
-                        cubeGrid.AddConsumerToProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
+                        bool consumerAdded = cubeGrid.AddConsumerToProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
+                        if (consumerAdded)
+                        {
+                            soundManager.PlayElectricityLinkSound();
+                        }
                     } else if (consumer != null)
                     {
-                        currentSignalConsumerCoords = new Vector3Int(x, y, z);
+                        if (!currentSignalConsumerCoords.Value.Equals(new Vector3Int(x, y, z)))
+                        {
+                            currentSignalConsumerCoords = new Vector3Int(x, y, z);
+                            soundManager.PlayElectricitySelectSound();
+                        }
                     }
                     else
                     {
                         ClearSignals();
+                        soundManager.PlayElectricityUnselectSound();
                     }
                 } else if (currentSignalProducerCoords.HasValue)
                 {
                     if (consumer != null)
                     {
-                        cubeGrid.AddConsumerToProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
+                        bool consumerAdded = cubeGrid.AddConsumerToProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
+                        if (consumerAdded)
+                        {
+                            soundManager.PlayElectricityLinkSound();
+                        }
                     }
                     else if (producer != null)
                     {
-                        currentSignalProducerCoords = new Vector3Int(x, y, z);
+                        if (!currentSignalProducerCoords.Value.Equals(new Vector3Int(x, y, z)))
+                        {
+                            currentSignalProducerCoords = new Vector3Int(x, y, z);
+                            soundManager.PlayElectricitySelectSound();
+                        }
                     }
                     else
                     {
                         ClearSignals();
+                        soundManager.PlayElectricityUnselectSound();
                     }
                 }
                 else
@@ -149,10 +181,12 @@ public class CubeGridEditor : MonoBehaviour
                     if (producer != null)
                     {
                         currentSignalProducerCoords = new Vector3Int(x, y, z);
+                        soundManager.PlayElectricitySelectSound();
                     }
                     else if (consumer != null)
                     {
                         currentSignalConsumerCoords = new Vector3Int(x, y, z);
+                        soundManager.PlayElectricitySelectSound();
                     }
                     else
                     {
@@ -174,17 +208,25 @@ public class CubeGridEditor : MonoBehaviour
             int z = cursorCell.Value.z;
             if (x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
             {
-                SignalProducer producer = cubeGrid.GetInstance(x, y, z).TryGetComponentInChildren<SignalProducer>();
-                SignalConsumer consumer = cubeGrid.GetInstance(x, y, z).TryGetComponentInChildren<SignalConsumer>();
+                GameObject instance = cubeGrid.GetInstance(x, y, z);
+                SignalProducer producer = null;
+                SignalConsumer consumer = null;
+                if (instance != null)
+                {
+                    producer = instance.TryGetComponentInChildren<SignalProducer>();
+                    consumer = instance.TryGetComponentInChildren<SignalConsumer>();
+                }
                 if (currentSignalConsumerCoords.HasValue)
                 {
                     if (producer != null && cubeGrid.ProducerContainsConsumer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z))
                     {
                         cubeGrid.RemoveConsumerFromProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
+                        soundManager.PlayElectricityUnlinkSound();
                     }
                     else
                     {
                         ClearSignals();
+                        soundManager.PlayElectricityUnselectSound();
                     }
                 }
                 else if (currentSignalProducerCoords.HasValue)
@@ -192,10 +234,12 @@ public class CubeGridEditor : MonoBehaviour
                     if (consumer != null && cubeGrid.ProducerContainsConsumer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z))
                     {
                         cubeGrid.RemoveConsumerFromProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
+                        soundManager.PlayElectricityUnlinkSound();
                     }
                     else
                     {
                         ClearSignals();
+                        soundManager.PlayElectricityUnselectSound();
                     }
                 }
                 else
@@ -348,6 +392,14 @@ public class CubeGridEditor : MonoBehaviour
     {
         if (newY >= 0 && newY < cubeGrid.height)
         {
+            if (newY > currentY)
+            {
+                soundManager.PlayLayerUpSound();
+            }
+            else if (newY < currentY)
+            {
+                soundManager.PlayLayerDownSound();
+            }
             currentY = newY;
             editLayerPlane.transform.position = new Vector3(4.5f, currentY - 0.49f, 4.5f);
             floorSlider.value = newY;
