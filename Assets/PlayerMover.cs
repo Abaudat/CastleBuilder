@@ -62,7 +62,7 @@ public class PlayerMover : MonoBehaviour
 		transform.Rotate(new Vector3(0, rotationX, 0));
 	}
 
-	void FixedUpdate()
+    void FixedUpdate()
 	{
 		velocity = body.velocity;
 		if (onGround || SnapToGround())

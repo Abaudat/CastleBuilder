@@ -10,8 +10,9 @@ public class Boulder : CollisionBlock
 
     private new Rigidbody rigidbody;
     private bool enteredOrStayedCollision = false;
+    private bool preventOtherClip = false;
 
-    private new void Awake()
+    protected override void Awake()
     {
         base.Awake();
         rigidbody = GetComponent<Rigidbody>();
@@ -23,7 +24,7 @@ public class Boulder : CollisionBlock
         {
             if (!rollAudioSource.isPlaying)
             {
-                rollAudioSource.volume = rigidbody.velocity.magnitude / minKillVelocity;
+                rollAudioSource.volume = (rigidbody.velocity.magnitude - 0.1f) / minKillVelocity;
                 rollAudioSource.Play();
             }
         }
@@ -35,6 +36,7 @@ public class Boulder : CollisionBlock
         if (rigidbody.velocity.magnitude >= minKillVelocity)
         {
             playManager.Die();
+            preventOtherClip = true;
             collisionAudioSource.Stop();
             collisionAudioSource.volume = 1;
             collisionAudioSource.clip = boulderCrushClip;
@@ -45,11 +47,12 @@ public class Boulder : CollisionBlock
     protected override void OnCollisionEnter(Collision collision)
     {
         enteredOrStayedCollision = true;
-        Debug.Log("Collision: " + collision.impulse);
-        Debug.Log("Collision dot: " + Vector3.Dot(collision.impulse, rigidbody.velocity));
-        collisionAudioSource.volume = (Vector3.Dot(collision.impulse, rigidbody.velocity) - minKillVelocity) / (3 * minKillVelocity);
-        collisionAudioSource.clip = boulderCollisionClip;
-        collisionAudioSource.Play();
+        if (!collisionAudioSource.isPlaying || !preventOtherClip)
+        {
+            collisionAudioSource.volume = (Vector3.Dot(collision.impulse, rigidbody.velocity) - minKillVelocity) / (3 * minKillVelocity);
+            collisionAudioSource.clip = boulderCollisionClip;
+            collisionAudioSource.Play();
+        }
         base.OnCollisionEnter(collision);
     }
 

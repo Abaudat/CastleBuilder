@@ -132,6 +132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 838342358050647783}
   canMove: 1
+  landClip: {fileID: 8300000, guid: 531470a41c0b64b4fa5206a2937e8939, type: 3}
   maxSpeed: 2
   maxAcceleration: 10
   maxAirAcceleration: 5
@@ -142,6 +143,7 @@ MonoBehaviour:
   sensitivityY: 2
   gravityStrength: 0.03
   probeDistance: 1
+  minVerticalImpulseForLanding: 6
 --- !u!1 &838342358050647781
 GameObject:
   m_ObjectHideFlags: 0
