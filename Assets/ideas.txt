@@ -1,0 +1,7 @@
+* Clear all button
+* Add plug icon to consumers and lightning icon to producers
+* Different sounds when placing different elements
+* Keyboard shortcuts in build mode
+* Change elements display in edit mode to facilitate building
+* Tooltips
+* Preview of selected element in electricity mode

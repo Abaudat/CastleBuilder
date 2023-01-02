@@ -56,10 +56,18 @@ public class PlayerMover : MonoBehaviour
 
 	void RotateCamera()
     {
-		float rotationX = Input.GetAxis("Mouse X") * sensitivityY;
-		float rotationY = Input.GetAxis("Mouse Y") * sensitivityX;
-		playerCamera.transform.Rotate(new Vector3(-rotationY, 0, 0));
-		transform.Rotate(new Vector3(0, rotationX, 0));
+		float rotationY = Input.GetAxis("Mouse X") * sensitivityY;
+		float newRotX = playerCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") * sensitivityX;
+		if (newRotX > 80 && newRotX < 180)
+        {
+			newRotX = 80;
+        }
+		else if (newRotX < 280 && newRotX > 180)
+		{
+			newRotX = 280;
+		}
+		playerCamera.transform.eulerAngles = new Vector3(newRotX, playerCamera.transform.eulerAngles.y, playerCamera.transform.eulerAngles.z);
+		transform.Rotate(new Vector3(0, rotationY, 0));
 	}
 
     void FixedUpdate()

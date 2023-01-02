@@ -268,7 +268,7 @@ public class CubeGridEditor : MonoBehaviour
 
     private Vector3Int? GetCursorCell()
     {
-        Plane plane = new Plane(Vector3.up, Vector3.up * currentY);
+        Plane plane = new Plane(Vector3.up, Vector3.up * (currentY - 0.5f));
         Ray ray = editCameraComponent.ScreenPointToRay(Input.mousePosition);
         if (plane.Raycast(ray, out float enter))
         {

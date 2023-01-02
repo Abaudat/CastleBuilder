@@ -1,3 +1,0 @@
-* Camera rotation and moving with mouse
-* Clear all button
-* Add plug icon to consumers and lightning icon to producers
