@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public GameObject editCamera, editPanel, editLayerPlanePrefab, roof;
+    public GameObject editCamera, editPanel, editLayerPlanePrefab, roof, electricityLinePrefab;
+    public Transform electricityLinesParent;
     public CubeGrid cubeGrid;
     public EventSystem eventSystem;
     public Material phantomMaterial;
@@ -194,6 +195,7 @@ public class CubeGridEditor : MonoBehaviour
                     }
                 }
                 cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                RecreateElectricityLines();
             }
         }
     }
@@ -247,7 +249,68 @@ public class CubeGridEditor : MonoBehaviour
                     ClearSignals();
                 }
                 cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                RecreateElectricityLines();
             }
+        }
+    }
+
+    private void RecreateElectricityLines()
+    {
+        ClearElectricitryLines();
+        if (currentSignalConsumerCoords.HasValue)
+        {
+            foreach (Vector3Int producerCoord in cubeGrid.ProducersForConsumer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z))
+            {
+                if (producerCoord.y == currentY || currentSignalConsumerCoords.Value.y == currentY)
+                {
+                    GameObject electricityLine = Instantiate(electricityLinePrefab, electricityLinesParent);
+                    electricityLine.GetComponent<LineRenderer>().SetPosition(0, producerCoord);
+                    electricityLine.GetComponent<LineRenderer>().SetPosition(1, new Vector3(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z));
+                    if (producerCoord.y != currentSignalConsumerCoords.Value.y)
+                    {
+                        if (currentY == producerCoord.y)
+                        {
+                            electricityLine.GetComponent<LineRenderer>().endColor = new Color(0, 0, 0, 0);
+                        }
+                        else
+                        {
+                            electricityLine.GetComponent<LineRenderer>().startColor = new Color(0, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+        }
+        else if (currentSignalProducerCoords.HasValue)
+        {
+            foreach (Vector3Int consumerCoord in cubeGrid.ConsumersForProducer(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z))
+            {
+                if (consumerCoord.y == currentY || currentSignalProducerCoords.Value.y == currentY)
+                {
+                    GameObject electricityLine = Instantiate(electricityLinePrefab, electricityLinesParent);
+                    electricityLine.GetComponent<LineRenderer>().SetPosition(0, new Vector3(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z));
+                    electricityLine.GetComponent<LineRenderer>().SetPosition(1, consumerCoord);
+                    if (consumerCoord.y != currentSignalProducerCoords.Value.y)
+                    {
+                        if (currentY == consumerCoord.y)
+                        {
+                            electricityLine.GetComponent<LineRenderer>().endColor = new Color(0, 0, 0, 0);
+                        }
+                        else
+                        {
+                            electricityLine.GetComponent<LineRenderer>().startColor = new Color(0, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void ClearElectricitryLines()
+    {
+        foreach (Transform line in electricityLinesParent) //TODO: Add pooling
+        {
+            Destroy(line.gameObject);
         }
     }
 
@@ -348,6 +411,7 @@ public class CubeGridEditor : MonoBehaviour
     public void StopEditing()
     {
         cubeGrid.ChangeAllMaterials(x => x.ResetMaterial());
+        ClearElectricitryLines();
         isEditing = false;
         editPanel.SetActive(false);
         editCameraMover.MakeAllWallsVisible();
@@ -371,6 +435,7 @@ public class CubeGridEditor : MonoBehaviour
         currentSignalProducerCoords = null;
         GeneratePhantom();
         cubeGrid.SetPlacementModeMaterials(currentY);
+        ClearElectricitryLines();
     }
 
     private void GeneratePhantom()
@@ -407,6 +472,7 @@ public class CubeGridEditor : MonoBehaviour
             if (isEditingSignals)
             {
                 cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                RecreateElectricityLines();
             }
             else
             {

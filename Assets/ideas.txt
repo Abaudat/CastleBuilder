@@ -5,3 +5,4 @@
 * Change elements display in edit mode to facilitate building
 * Tooltips
 * Preview of selected element in electricity mode
+* Show number of linked producers / consumers on each floor on the Floor slider on the right

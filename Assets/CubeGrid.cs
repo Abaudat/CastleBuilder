@@ -77,6 +77,30 @@ public class CubeGrid : MonoBehaviour
         return element.consumerCoords.Contains(new Vector3Int(consumerX, consumerY, consumerZ));
     }
 
+    public List<Vector3Int> ProducersForConsumer(int consumerX, int consumerY, int consumerZ)
+    {
+        List<Vector3Int> producers = new List<Vector3Int>();
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    if (ProducerContainsConsumer(consumerX, consumerY, consumerZ, i, j, k))
+                    {
+                        producers.Add(new Vector3Int(i, j, k));
+                    }
+                }
+            }
+        }
+        return producers;
+    }
+
+    public List<Vector3Int> ConsumersForProducer(int producerX, int producerY, int producerZ)
+    {
+        return elementGrid[producerX, producerY, producerZ].consumerCoords;
+    }
+
     public bool IsElementEmpty(int x, int y, int z)
     {
         return elementGrid[x, y, z].IsEmpty();
