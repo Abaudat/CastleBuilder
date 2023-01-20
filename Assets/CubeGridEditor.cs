@@ -266,16 +266,25 @@ public class CubeGridEditor : MonoBehaviour
                     GameObject electricityLine = Instantiate(electricityLinePrefab, electricityLinesParent);
                     electricityLine.GetComponent<LineRenderer>().SetPosition(0, producerCoord);
                     electricityLine.GetComponent<LineRenderer>().SetPosition(1, new Vector3(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z));
-                    if (producerCoord.y != currentSignalConsumerCoords.Value.y)
+                    if (currentSignalConsumerCoords.Value.y < currentY)
                     {
-                        if (currentY == producerCoord.y)
-                        {
-                            electricityLine.GetComponent<LineRenderer>().endColor = new Color(0, 0, 0, 0);
-                        }
-                        else
-                        {
-                            electricityLine.GetComponent<LineRenderer>().startColor = new Color(0, 0, 0, 0);
-                        }
+                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f / (1 + currentY - currentSignalConsumerCoords.Value.y);
+                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
+                    }
+                    else if (currentSignalConsumerCoords.Value.y > currentY)
+                    {
+                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f * (1 + currentSignalConsumerCoords.Value.y - currentY);
+                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
+                    }
+                    if (producerCoord.y < currentY)
+                    {
+                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f / (1 + currentY - producerCoord.y);
+                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
+                    }
+                    else if (producerCoord.y > currentY)
+                    {
+                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f * (1 + producerCoord.y - currentY);
+                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
                     }
                 }
             }
@@ -289,16 +298,25 @@ public class CubeGridEditor : MonoBehaviour
                     GameObject electricityLine = Instantiate(electricityLinePrefab, electricityLinesParent);
                     electricityLine.GetComponent<LineRenderer>().SetPosition(0, new Vector3(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z));
                     electricityLine.GetComponent<LineRenderer>().SetPosition(1, consumerCoord);
-                    if (consumerCoord.y != currentSignalProducerCoords.Value.y)
+                    if (currentSignalProducerCoords.Value.y < currentY)
                     {
-                        if (currentY == consumerCoord.y)
-                        {
-                            electricityLine.GetComponent<LineRenderer>().endColor = new Color(0, 0, 0, 0);
-                        }
-                        else
-                        {
-                            electricityLine.GetComponent<LineRenderer>().startColor = new Color(0, 0, 0, 0);
-                        }
+                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f / (1 + currentY - currentSignalProducerCoords.Value.y);
+                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
+                    }
+                    else if (currentSignalProducerCoords.Value.y > currentY)
+                    {
+                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f * (1 + currentSignalProducerCoords.Value.y - currentY);
+                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
+                    }
+                    if (consumerCoord.y < currentY)
+                    {
+                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f / (1 + currentY - consumerCoord.y);
+                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
+                    }
+                    else if (consumerCoord.y > currentY)
+                    {
+                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f * (1 + consumerCoord.y - currentY);
+                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
                     }
                 }
             }
