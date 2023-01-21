@@ -380,7 +380,7 @@ public class CubeGridEditor : MonoBehaviour
     {
         using MemoryStream memoryStream = new MemoryStream();
         using BinaryWriter writer = new BinaryWriter(memoryStream);
-        writer.Write(0);
+        writer.Write(1);
         cubeGrid.Save(writer);
         exportInput.text = System.Convert.ToBase64String(memoryStream.ToArray());
     }
@@ -391,9 +391,9 @@ public class CubeGridEditor : MonoBehaviour
         byte[] bytes = System.Convert.FromBase64String(importString);
         using BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
         int header = reader.ReadInt32();
-        if (header == 0)
+        if (header <= 1)
         {
-            cubeGrid.Load(reader);
+            cubeGrid.Load(reader, header);
             cubeGrid.SetPlacementModeMaterials(currentY);
         }
         else

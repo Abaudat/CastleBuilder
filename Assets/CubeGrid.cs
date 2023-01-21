@@ -261,7 +261,7 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
-    public void Load(BinaryReader reader)
+    public void Load(BinaryReader reader, int version)
     {
         for (int i = 0; i < width; i++)
         {
@@ -269,7 +269,7 @@ public class CubeGrid : MonoBehaviour
             {
                 for (int k = 0; k < depth; k++)
                 {
-                    elementGrid[i, j, k].Load(reader);
+                    elementGrid[i, j, k].Load(reader, version);
                 }
             }
         }
@@ -494,17 +494,31 @@ public class CubeGrid : MonoBehaviour
         public void Save(BinaryWriter writer)
         {
             writer.Write((byte)rotation);
-            writer.Write(prefabIndex);
-            writer.Write(consumerCoords.Count);
+            writer.Write((byte)prefabIndex);
+            writer.Write((byte)consumerCoords.Count);
             consumerCoords.ForEach(coord =>
             {
-                writer.Write(coord.x);
-                writer.Write(coord.y);
-                writer.Write(coord.z);
+                writer.Write((sbyte)coord.x);
+                writer.Write((sbyte)coord.y);
+                writer.Write((sbyte)coord.z);
             });
         }
 
-        public virtual void Load(BinaryReader reader)
+        public virtual void Load(BinaryReader reader, int version)
+        {
+            switch (version)
+            {
+                case 0:
+                    LoadVersion0(reader);
+                    break;
+                case 1:
+                    LoadVersion1(reader);
+                    break;
+            }
+            
+        }
+
+        private void LoadVersion0(BinaryReader reader)
         {
             rotation = (Rotation)reader.ReadByte();
             prefabIndex = reader.ReadInt32();
@@ -512,6 +526,17 @@ public class CubeGrid : MonoBehaviour
             for (int i = 0; i < numberOfConsumers; i++)
             {
                 consumerCoords.Add(new Vector3Int(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32()));
+            }
+        }
+
+        private void LoadVersion1(BinaryReader reader)
+        {
+            rotation = (Rotation)reader.ReadByte();
+            prefabIndex = reader.ReadByte();
+            int numberOfConsumers = reader.ReadByte();
+            for (int i = 0; i < numberOfConsumers; i++)
+            {
+                consumerCoords.Add(new Vector3Int(reader.ReadSByte(), reader.ReadSByte(), reader.ReadSByte()));
             }
         }
     }
