@@ -40,6 +40,8 @@ public class PrefabHelper
                 return Resources.Load("WallToWall") as GameObject;
             case 17:
                 return Resources.Load("StraightCorner") as GameObject;
+            case 18:
+                return Resources.Load("Torch") as GameObject;
             default:
                 return null;
         }
