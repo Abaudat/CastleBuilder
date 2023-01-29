@@ -5,25 +5,3 @@
 * Tooltips
 * Preview of selected element in electricity mode
 * Pusher block, pushes when it gets power
-
-Tutorial:
-
-Place the blocks below to create your castle.
-
-- Left click to place a block
-- Right click to remove a block
-- Press E to rotate a block
-
-- You can only edit objects on the current layer
-- Press R to go one layer above
-- Press F to go one layer below
-
-- Some blocks produce electricity when some conditions are met (pressure plates)
-- Some blocks activate when they are provided electrcity (Wall to Ceiling, ...)
-- To link an electricity producer to a consumer, switch to electricity mode
-
-- In electricity mode, left click to select a block, then left click other blocks to link them to the selected block. 
-- Right click to clear the link between the selected block and another block.
-
-- In placement mode, press P to spawn at the current mouse position to test your level. Press Escape to go back to edit mode
-- To share your level, you need to clear it from start to finish by clicking on Validate and completing the level by touching a chest
