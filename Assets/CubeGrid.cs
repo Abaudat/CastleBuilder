@@ -160,6 +160,24 @@ public class CubeGrid : MonoBehaviour
         ChangeAllMaterials(action, (_, _, _) => true);
     }
 
+    public bool ContainsAtLeastOneChest()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                for (int k = 0; k < depth; k++)
+                {
+                    if (elementGrid[i, j, k].prefabIndex == 5)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private void ChangeAllMaterials(Action<MaterialManager> action, Func<int, int, int, bool> filter)
     {
         for (int i = 0; i < width; i++)

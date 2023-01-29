@@ -7,6 +7,7 @@ public class PlayManager : MonoBehaviour
 
     private CubeGridEditor cubeGridEditor;
     private CubeGrid cubeGrid;
+    private TutorialManager tutorialManager;
 
     bool isExploring = false;
     bool isValidating = false;
@@ -16,6 +17,7 @@ public class PlayManager : MonoBehaviour
     {
         cubeGridEditor = FindObjectOfType<CubeGridEditor>();
         cubeGrid = FindObjectOfType<CubeGrid>();
+        tutorialManager = FindObjectOfType<TutorialManager>();
     }
 
     private void Update()
@@ -53,6 +55,7 @@ public class PlayManager : MonoBehaviour
     {
         if (!isValidating)
         {
+            tutorialManager.TogglePlayModeTutorial();
             editCamera.SetActive(false);
             cubeGrid.PrepareForPlay();
             if (exploringPlayer != null)

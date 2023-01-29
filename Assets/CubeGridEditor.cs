@@ -19,6 +19,7 @@ public class CubeGridEditor : MonoBehaviour
     private Camera editCameraComponent;
     private PlayManager playManager;
     private SoundManager soundManager;
+    private TutorialManager tutorialManager;
     private int currentX, currentY, currentZ;
     private GameObject phantomCube, editLayerPlane;
     private bool isEditing, isEditingSignals;
@@ -31,6 +32,7 @@ public class CubeGridEditor : MonoBehaviour
     {
         playManager = FindObjectOfType<PlayManager>();
         soundManager = FindObjectOfType<SoundManager>();
+        tutorialManager = FindObjectOfType<TutorialManager>();
         editCameraComponent = editCamera.GetComponent<Camera>();
     }
 
@@ -66,6 +68,7 @@ public class CubeGridEditor : MonoBehaviour
                     {
                         if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
                         {
+                            tutorialManager.PlaceBlock();
                             ChangeSelectedElement(currentPrefabIndex);
                             soundManager.PlayBuildSound();
                         }
@@ -100,10 +103,12 @@ public class CubeGridEditor : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
+                tutorialManager.ChangeFloor();
                 ChangeLayer(currentY + 1);
             }
             else if (Input.GetKeyDown(KeyCode.F))
             {
+                tutorialManager.ChangeFloor();
                 ChangeLayer(currentY - 1);
             }
             else if (Input.GetKeyDown(KeyCode.Space))
@@ -410,8 +415,15 @@ public class CubeGridEditor : MonoBehaviour
 
     public void StartPlaying()
     {
-        StopEditing();
-        playManager.StartValidating();
+        if (cubeGrid.ContainsAtLeastOneChest())
+        {
+            StopEditing();
+            playManager.StartValidating();
+        }
+        else
+        {
+            tutorialManager.ShowNoChestPanel();
+        }
     }
 
     public void StartEditing()
