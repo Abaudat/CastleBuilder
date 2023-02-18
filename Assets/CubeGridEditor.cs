@@ -440,7 +440,7 @@ public class CubeGridEditor : MonoBehaviour
 
     public void StopEditing()
     {
-        cubeGrid.ChangeAllMaterials(x => x.ResetMaterial());
+        cubeGrid.ChangeAllMaterials(x => x.Reset());
         ClearElectricitryLines();
         isEditing = false;
         editPanel.SetActive(false);
@@ -523,7 +523,7 @@ public class CubeGridEditor : MonoBehaviour
         {
             if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
             {
-                cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.ResetMaterial());
+                cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.Reset());
             }
             currentX = x;
             currentY = y;

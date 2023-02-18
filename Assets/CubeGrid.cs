@@ -109,7 +109,7 @@ public class CubeGrid : MonoBehaviour
     public void SetPlacementModeMaterials(int currentLayerY)
     {
         ChangeMaterialsOfLayersBelow(x => x.Shadow(), currentLayerY);
-        ChangeMaterialsOfLayer(x => x.ResetMaterial(), currentLayerY);
+        ChangeMaterialsOfLayer(x => x.Reset(), currentLayerY);
         ChangeMaterialsOfLayer(x => x.Transparent(), currentLayerY + 1);
         ChangeMaterialsOfLayersAbove(x => x.Invisible(), currentLayerY + 1);
     }
@@ -146,16 +146,19 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
-    public void ChangeMaterial(int x, int y, int z, Action<MaterialManager> action)
+    public void ChangeMaterial(int x, int y, int z, Action<DisplayManager> action)
     {
         if (IsInBounds(x, y, z) && elementGrid[x, y, z].IsEmpty())
         {
             return;
         }
-        action.Invoke(instancesGrid[x, y, z].GetComponentInChildren<MaterialManager>());
+        foreach(DisplayManager displayManager in instancesGrid[x, y, z].GetComponentsInChildren<DisplayManager>())
+        {
+            action.Invoke(displayManager);
+        }
     }
 
-    public void ChangeAllMaterials(Action<MaterialManager> action)
+    public void ChangeAllMaterials(Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (_, _, _) => true);
     }
@@ -178,7 +181,7 @@ public class CubeGrid : MonoBehaviour
         return false;
     }
 
-    private void ChangeAllMaterials(Action<MaterialManager> action, Func<int, int, int, bool> filter)
+    private void ChangeAllMaterials(Action<DisplayManager> action, Func<int, int, int, bool> filter)
     {
         for (int i = 0; i < width; i++)
         {
@@ -195,57 +198,57 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
-    private void ChangeMaterialsOfLayer(Action<MaterialManager> action, int layerY)
+    private void ChangeMaterialsOfLayer(Action<DisplayManager> action, int layerY)
     {
         ChangeAllMaterials(action, (_, y, _) => y == layerY);
     }
 
-    private void ChangeMaterialsOfLayersBelow(Action<MaterialManager> action, int layerY)
+    private void ChangeMaterialsOfLayersBelow(Action<DisplayManager> action, int layerY)
     {
         ChangeAllMaterials(action, (_, y, _) => y < layerY);
     }
 
-    private void ChangeMaterialsOfLayersAbove(Action<MaterialManager> action, int layerY)
+    private void ChangeMaterialsOfLayersAbove(Action<DisplayManager> action, int layerY)
     {
         ChangeAllMaterials(action, (_, y, _) => y > layerY);
     }
 
-    private void ChangeAllConsumersUnderMaterials(int layerY, Action<MaterialManager> action)
+    private void ChangeAllConsumersUnderMaterials(int layerY, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y < layerY && consumersGrid[x, y, z] != null);
     }
 
-    private void ChangeAllProducersUnderMaterials(int layerY, Action<MaterialManager> action)
+    private void ChangeAllProducersUnderMaterials(int layerY, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y < layerY && producersGrid[x, y, z] != null);
     }
 
-    private void ChangeAllConsumersSameLayerMaterials(int layerY, Action<MaterialManager> action)
+    private void ChangeAllConsumersSameLayerMaterials(int layerY, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y == layerY && consumersGrid[x, y, z] != null);
     }
 
-    private void ChangeAllProducersSameLayerMaterials(int layerY, Action<MaterialManager> action)
+    private void ChangeAllProducersSameLayerMaterials(int layerY, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y == layerY && producersGrid[x, y, z] != null);
     }
 
-    private void ChangeAllLinkedConsumersUnderMaterials(int layerY, int producerX, int producerY, int producerZ, Action<MaterialManager> action)
+    private void ChangeAllLinkedConsumersUnderMaterials(int layerY, int producerX, int producerY, int producerZ, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y < layerY && elementGrid[producerX, producerY, producerZ].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(x, y, z)));
     }
 
-    private void ChangeAllLinkedConsumersSameLayerMaterials(int layerY, int producerX, int producerY, int producerZ, Action<MaterialManager> action)
+    private void ChangeAllLinkedConsumersSameLayerMaterials(int layerY, int producerX, int producerY, int producerZ, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y == layerY && elementGrid[producerX, producerY, producerZ].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(x, y, z)));
     }
 
-    private void ChangeAllLinkedProducersUnderMaterials(int layerY, int consumerX, int consumerY, int consumerZ, Action<MaterialManager> action)
+    private void ChangeAllLinkedProducersUnderMaterials(int layerY, int consumerX, int consumerY, int consumerZ, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y < layerY && elementGrid[x, y, z].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(consumerX, consumerY, consumerZ)));
     }
 
-    private void ChangeAllLinkedProducersSameLayerMaterials(int layerY, int consumerX, int consumerY, int consumerZ, Action<MaterialManager> action)
+    private void ChangeAllLinkedProducersSameLayerMaterials(int layerY, int consumerX, int consumerY, int consumerZ, Action<DisplayManager> action)
     {
         ChangeAllMaterials(action, (x, y, z) => y == layerY && elementGrid[x, y, z].consumerCoords.Any(consumerCoords => consumerCoords == new Vector3Int(consumerX, consumerY, consumerZ)));
     }

@@ -65,6 +65,7 @@ GameObject:
   - component: {fileID: 8950129127313083373}
   - component: {fileID: 1133168951612685157}
   - component: {fileID: 754610889192839386}
+  - component: {fileID: 7531843495188704238}
   m_Layer: 0
   m_Name: SwitchIcon
   m_TagString: Untagged
@@ -149,6 +150,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 703fb2b2b4681054ca05cf4e5f7a9cb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7531843495188704238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4420768946145177818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c888bc82147655f43975e3844b50b28f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &5718093257293636114

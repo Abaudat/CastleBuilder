@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MaterialManager : MonoBehaviour
+public class MaterialDisplayManager : DisplayManager
 {
     private Material initialMaterial;
     private new Renderer renderer;
@@ -13,57 +13,57 @@ public class MaterialManager : MonoBehaviour
         materialDatabase = FindObjectOfType<MaterialDatabase>();
     }
 
-    public void ResetMaterial()
+    public override void Reset()
     {
         renderer.material = initialMaterial;
     }
 
-    public void Select()
+    public override void Select()
     {
         renderer.material = materialDatabase.selectMaterial;
     }
 
-    public void Shadow()
+    public override void Shadow()
     {
         renderer.material = materialDatabase.shadowMeterial;
     }
 
-    public void HighlightSignal()
+    public override void HighlightSignal()
     {
         renderer.material = materialDatabase.signalHighlightMaterial;
     }
 
-    public void HighlightLinked()
+    public override void HighlightLinked()
     {
         renderer.material = materialDatabase.signalLinkedConsumerMaterial;
     }
 
-    public void HighlightUnlinked()
+    public override void HighlightUnlinked()
     {
         renderer.material = materialDatabase.signalUnlinkedConsumerMaterial;
     }
 
-    public void HighlightSignalUnder()
+    public override void HighlightSignalUnder()
     {
         renderer.material = materialDatabase.signalHighlightUnderMaterial;
     }
 
-    public void HighlightLinkedUnder()
+    public override void HighlightLinkedUnder()
     {
         renderer.material = materialDatabase.signalLinkedUnder;
     }
 
-    public void HighlightUnlinkedUnder()
+    public override void HighlightUnlinkedUnder()
     {
         renderer.material = materialDatabase.signalUnlinkedUnder;
     }
 
-    public void Transparent()
+    public override void Transparent()
     {
         renderer.material = materialDatabase.transparentMaterial;
     }
 
-    public void Invisible()
+    public override void Invisible()
     {
         renderer.material = materialDatabase.invisibleMaterial;
     }
