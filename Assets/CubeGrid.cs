@@ -533,6 +533,7 @@ public class CubeGrid : MonoBehaviour
                     LoadVersion0(reader);
                     break;
                 case 1:
+                case 2:
                     LoadVersion1(reader);
                     break;
             }

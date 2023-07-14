@@ -1,8 +1,10 @@
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class CubeGridEditor : MonoBehaviour
 {
@@ -385,26 +387,33 @@ public class CubeGridEditor : MonoBehaviour
     {
         using MemoryStream memoryStream = new MemoryStream();
         using BinaryWriter writer = new BinaryWriter(memoryStream);
-        writer.Write(1);
         cubeGrid.Save(writer);
-        exportInput.text = System.Convert.ToBase64String(memoryStream.ToArray());
+        byte[] compressedBytes = PersistenceHelpers.compressBytes(memoryStream.ToArray());
+        byte[] bytesWithFlag = PersistenceHelpers.addFlag(compressedBytes, 2);
+        exportInput.text = PersistenceHelpers.bytesToStringLevelCode(bytesWithFlag);
     }
 
     public void Import()
     {
         string importString = importInput.text;
-        byte[] bytes = System.Convert.FromBase64String(importString);
-        using BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
-        int header = reader.ReadInt32();
-        if (header <= 1)
+        byte[] bytes = PersistenceHelpers.stringLevelCodeToBytes(importString);
+        int format = BitConverter.ToInt32(bytes.Take(4).ToArray());
+        BinaryReader reader;
+        if (format == 0 || format == 1)
         {
-            cubeGrid.Load(reader, header);
-            cubeGrid.SetPlacementModeMaterials(currentY);
+            reader = new BinaryReader(new MemoryStream(bytes.Skip(4).ToArray()));
+        }
+        else if (format == 2)
+        {
+            reader = new BinaryReader(new MemoryStream(PersistenceHelpers.decompressBytes(bytes.Skip(4).ToArray())));
         }
         else
         {
-            Debug.LogWarning("Unknown map format " + header);
+            Debug.LogWarning("Unknown map format " + format);
+            return;
         }
+        cubeGrid.Load(reader, format);
+        cubeGrid.SetPlacementModeMaterials(currentY);
     }
 
     public void StartExploring()
