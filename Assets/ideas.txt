@@ -2,6 +2,6 @@
 * Add plug icon to consumers and lightning icon to producers
 * Different sounds when placing different elements
 * Keyboard shortcuts in build mode
-* Tooltips
 * Preview of selected element in electricity mode
 * Pusher block, pushes when it gets power
+* Right click clears current block in placement mode

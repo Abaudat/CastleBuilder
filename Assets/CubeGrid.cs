@@ -114,7 +114,7 @@ public class CubeGrid : MonoBehaviour
         ChangeMaterialsOfLayersAbove(x => x.Invisible(), currentLayerY + 1);
     }
 
-    public void SetSignalModeMaterials(int currentLayerY, Vector3Int? currentProducerCoords, Vector3Int? currentConsumerCoords)
+    public void SetSignalModeMaterials(int currentLayerY, Vector3Int? currentProducerCoords, Vector3Int? currentConsumerCoords, Vector3Int currentHovered)
     {
         ChangeMaterialsOfLayersBelow(x => x.Shadow(), currentLayerY + 1);
         ChangeMaterialsOfLayer(x => x.Transparent(), currentLayerY + 1);
@@ -122,8 +122,9 @@ public class CubeGrid : MonoBehaviour
         if (currentProducerCoords.HasValue)
         {
             ChangeAllConsumersUnderMaterials(currentLayerY, k => k.HighlightUnlinkedUnder());
-            ChangeAllLinkedConsumersUnderMaterials(currentLayerY, currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.HighlightLinkedUnder());
             ChangeAllConsumersSameLayerMaterials(currentLayerY, k => k.HighlightUnlinked());
+            ChangeMaterial(currentHovered.x, currentHovered.y, currentHovered.z, k => k.Select());
+            ChangeAllLinkedConsumersUnderMaterials(currentLayerY, currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.HighlightLinkedUnder());
             ChangeAllLinkedConsumersSameLayerMaterials(currentLayerY, currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.HighlightLinked());
             ChangeAllProducersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
             ChangeMaterial(currentProducerCoords.Value.x, currentProducerCoords.Value.y, currentProducerCoords.Value.z, k => k.Select());
@@ -131,8 +132,9 @@ public class CubeGrid : MonoBehaviour
         else if (currentConsumerCoords.HasValue)
         {
             ChangeAllProducersUnderMaterials(currentLayerY, k => k.HighlightUnlinkedUnder());
-            ChangeAllLinkedProducersUnderMaterials(currentLayerY, currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.HighlightLinkedUnder());
             ChangeAllProducersSameLayerMaterials(currentLayerY, k => k.HighlightUnlinked());
+            ChangeMaterial(currentHovered.x, currentHovered.y, currentHovered.z, k => k.Select());
+            ChangeAllLinkedProducersUnderMaterials(currentLayerY, currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.HighlightLinkedUnder());
             ChangeAllLinkedProducersSameLayerMaterials(currentLayerY, currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.HighlightLinked());
             ChangeAllConsumersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
             ChangeMaterial(currentConsumerCoords.Value.x, currentConsumerCoords.Value.y, currentConsumerCoords.Value.z, k => k.Select());
@@ -143,6 +145,7 @@ public class CubeGrid : MonoBehaviour
             ChangeAllProducersUnderMaterials(currentLayerY, k => k.HighlightSignalUnder());
             ChangeAllConsumersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
             ChangeAllProducersSameLayerMaterials(currentLayerY, k => k.HighlightSignal());
+            ChangeMaterial(currentHovered.x, currentHovered.y, currentHovered.z, k => k.Select());
         }
     }
 
@@ -454,7 +457,7 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
-    private bool IsInBounds(int x, int y, int z)
+    public bool IsInBounds(int x, int y, int z)
     {
         return x >= 0 && x < width && y >= 0 && y < height && z >= 0 && z < depth;
     }

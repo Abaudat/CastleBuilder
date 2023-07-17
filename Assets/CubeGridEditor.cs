@@ -46,6 +46,11 @@ public class CubeGridEditor : MonoBehaviour
             {
                 if (!eventSystem.IsPointerOverGameObject())
                 {
+                    Vector3Int? cursorCell = GetCursorCell();
+                    if (cursorCell.HasValue)
+                    {
+                        ChangeCurrentCellSignalMode(cursorCell.Value.x, cursorCell.Value.y, cursorCell.Value.z);
+                    }
                     if (Input.GetKeyDown(KeyCode.Mouse0))
                     {
                         LinkSignals();
@@ -57,7 +62,7 @@ public class CubeGridEditor : MonoBehaviour
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         ClearSignals();
-                        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
                     }
                 }
             }
@@ -201,7 +206,7 @@ public class CubeGridEditor : MonoBehaviour
                         ClearSignals();
                     }
                 }
-                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
                 RecreateElectricityLines();
             }
         }
@@ -255,7 +260,7 @@ public class CubeGridEditor : MonoBehaviour
                 {
                     ClearSignals();
                 }
-                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
                 RecreateElectricityLines();
             }
         }
@@ -464,7 +469,7 @@ public class CubeGridEditor : MonoBehaviour
         isEditingSignals = true;
         DestroyPhantom();
         cubeGrid.ChangeAllMaterials(x => x.Shadow());
-        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
     }
 
     public void StopEditingSignals()
@@ -510,7 +515,7 @@ public class CubeGridEditor : MonoBehaviour
             floorText.text = (newY + 1).ToString();
             if (isEditingSignals)
             {
-                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords);
+                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
                 RecreateElectricityLines();
             }
             else
@@ -528,7 +533,7 @@ public class CubeGridEditor : MonoBehaviour
 
     public void ChangeCurrentCell(int x, int y, int z)
     {
-        if(x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
+        if(cubeGrid.IsInBounds(x, y, z))
         {
             if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
             {
@@ -546,6 +551,17 @@ public class CubeGridEditor : MonoBehaviour
                 DestroyPhantom();
                 cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.Select());
             }
+        }
+    }
+
+    public void ChangeCurrentCellSignalMode(int x, int y, int z)
+    {
+        if (cubeGrid.IsInBounds(x, y, z))
+        {
+            currentX = x;
+            currentY = y;
+            currentZ = z;
+            cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
         }
     }
 
