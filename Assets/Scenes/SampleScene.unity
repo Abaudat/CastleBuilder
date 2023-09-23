@@ -1002,8 +1002,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1255153566}
-        m_TargetAssemblyTypeName: CubeGridEditor, Assembly-CSharp
+      - m_Target: {fileID: 1255153573}
+        m_TargetAssemblyTypeName: CubeGridPersistenceManager, Assembly-CSharp
         m_MethodName: Import
         m_Mode: 1
         m_Arguments:
@@ -1038,9 +1038,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1255153566}
-        m_TargetAssemblyTypeName: CubeGridEditor, Assembly-CSharp
-        m_MethodName: StartPlaying
+      - m_Target: {fileID: 1988432602}
+        m_TargetAssemblyTypeName: PlayManager, Assembly-CSharp
+        m_MethodName: StartValidating
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3492,7 +3492,6 @@ MonoBehaviour:
   transparentMat: {fileID: 2100000, guid: ee921c0b16b7cbd41a8085e3c4ff1825, type: 2}
   wallMat: {fileID: 2100000, guid: 55c0be046bfdffd4597c2b791c100991, type: 2}
   eventSystem: {fileID: 973657779}
-  cubeGridEditor: {fileID: 1255153566}
   cameraSpeed: 10
   cameraZoomSpeed: 75
   cameraMaxZoom: 10
@@ -5759,9 +5758,9 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1255153566}
-        m_TargetAssemblyTypeName: CubeGridEditor, Assembly-CSharp
-        m_MethodName: ChangeLayer
+      - m_Target: {fileID: 1255153568}
+        m_TargetAssemblyTypeName: EditLayerManager, Assembly-CSharp
+        m_MethodName: ChangeCurrentLayerTo
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13071,6 +13070,13 @@ GameObject:
   - component: {fileID: 1255153565}
   - component: {fileID: 1255153566}
   - component: {fileID: 1255153567}
+  - component: {fileID: 1255153569}
+  - component: {fileID: 1255153568}
+  - component: {fileID: 1255153572}
+  - component: {fileID: 1255153571}
+  - component: {fileID: 1255153570}
+  - component: {fileID: 1255153573}
+  - component: {fileID: 1255153574}
   m_Layer: 0
   m_Name: EditManager
   m_TagString: EditManager
@@ -13102,25 +13108,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1255153564}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c088b48bb6e442244931fa4b28890998, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f3ec85e67b049740b911ea2b7c4a95e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editCamera: {fileID: 367637228}
-  editPanel: {fileID: 1994265941}
-  editLayerPlanePrefab: {fileID: 6944661007206491635, guid: 164b6807f2d512a4293bfc3a10f68f98,
-    type: 3}
-  roof: {fileID: 494346925}
-  electricityLinePrefab: {fileID: 8984531775783946671, guid: b1cc82216182e514495884065dc89dcc,
-    type: 3}
-  electricityLinesParent: {fileID: 1761735625}
-  cubeGrid: {fileID: 1761735624}
   eventSystem: {fileID: 973657779}
-  phantomMaterial: {fileID: 2100000, guid: f5e3b42032b2aae4a85291b5a98e1513, type: 2}
-  exportInput: {fileID: 871255987}
-  importInput: {fileID: 1654655949}
-  editCameraMover: {fileID: 367637232}
-  floorSlider: {fileID: 600064531}
-  floorText: {fileID: 2134085902}
+  editCameraComponent: {fileID: 367637230}
+  currentHoveredCell: {x: 0, y: 0, z: 0}
+  currentSignalTarget: {x: 0, y: 0, z: 0}
+  currentSelectedCell: {x: 0, y: 0, z: 0}
+  currentSignalTargetType: 0
+  currentPrefabIndex: 1
+  currentRotation: 0
+  currentEditMode: 2
 --- !u!114 &1255153567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13138,6 +13137,106 @@ MonoBehaviour:
   editTooltipTitle: {fileID: 1075374788}
   editTooltipDescription: {fileID: 1549126105}
   mainCanvas: {fileID: 886154639}
+--- !u!114 &1255153568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d956f0ef8d65f194f933617b1731225c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentHeight: 0
+  floorSlider: {fileID: 600064531}
+  floorText: {fileID: 2134085902}
+--- !u!114 &1255153569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f589e2ab1e7e5cd4cab453474d6ca15a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  editCamera: {fileID: 367637228}
+  editPanel: {fileID: 1994265941}
+  roof: {fileID: 494346925}
+  editLayerPlanePrefab: {fileID: 6944661007206491635, guid: 164b6807f2d512a4293bfc3a10f68f98,
+    type: 3}
+  rightWall: {fileID: 1754592211}
+  aboveWall: {fileID: 339111696}
+  leftWall: {fileID: 1364569222}
+  belowWall: {fileID: 1081328591}
+  wallMat: {fileID: 2100000, guid: 55c0be046bfdffd4597c2b791c100991, type: 2}
+--- !u!114 &1255153570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21ae556200ed0f94c87e81e04ad97403, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1255153571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0274c0b42f24ba469c93ce66ff9cee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1255153572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b13d3e42ecfcb5c4f956f748ccf868f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  phantomMaterial: {fileID: 2100000, guid: f5e3b42032b2aae4a85291b5a98e1513, type: 2}
+--- !u!114 &1255153573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffda9d5a87d0a7547b7c6ff2f0590936, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  exportInput: {fileID: 871255987}
+  importInput: {fileID: 1654655949}
+--- !u!114 &1255153574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255153564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11bd6df639894d842b24983eb32bc5e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1286533420
 GameObject:
   m_ObjectHideFlags: 0
@@ -16407,7 +16506,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 1, y: 0.7994734}
-  m_AnchoredPosition: {x: 0.06402588, y: 0.11000061}
+  m_AnchoredPosition: {x: 0.063964844, y: 0.11001587}
   m_SizeDelta: {x: 0.12799, y: 0.21997}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1549126105
@@ -18022,6 +18121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectMaterial: {fileID: 2100000, guid: f63a9335d58125941a733c8e2ba65f89, type: 2}
+  hoverMaterial: {fileID: 2100000, guid: e75f36b996e928c4f805dc6678b8bd01, type: 2}
   shadowMeterial: {fileID: 2100000, guid: d5f5afaefb7100148a1504a28e84d05e, type: 2}
   signalHighlightMaterial: {fileID: 2100000, guid: fd946690d9335bb41a1c48ea45a39102,
     type: 2}
@@ -18119,8 +18219,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1255153566}
-        m_TargetAssemblyTypeName: CubeGridEditor, Assembly-CSharp
+      - m_Target: {fileID: 1255153573}
+        m_TargetAssemblyTypeName: CubeGridPersistenceManager, Assembly-CSharp
         m_MethodName: Export
         m_Mode: 1
         m_Arguments:
@@ -18920,10 +19020,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34ee60d7f2e3c2d448f444ab20727d1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectMaterial: {fileID: 2100000, guid: f63a9335d58125941a733c8e2ba65f89, type: 2}
-  height: 5
-  width: 10
-  depth: 10
 --- !u!4 &1761735625
 Transform:
   m_ObjectHideFlags: 0
@@ -19453,7 +19549,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh20750
+  m_Name: pb_Mesh20636
   serializedVersion: 11
   m_SubMeshes:
   - serializedVersion: 2
@@ -20386,6 +20482,7 @@ MonoBehaviour:
   winPanel: {fileID: 1015880786}
   losePanel: {fileID: 2039803473}
   editCamera: {fileID: 367637228}
+  noChestPanel: {fileID: 812696084}
 --- !u!1 &1994265941
 GameObject:
   m_ObjectHideFlags: 0
@@ -22337,9 +22434,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1255153566}
-        m_TargetAssemblyTypeName: CubeGridEditor, Assembly-CSharp
-        m_MethodName: StartPlaying
+      - m_Target: {fileID: 1988432602}
+        m_TargetAssemblyTypeName: PlayManager, Assembly-CSharp
+        m_MethodName: StartValidating
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

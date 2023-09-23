@@ -41,7 +41,6 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
     {
         cubeGridEditor.ChangeCurrentPrefabIndex(elementPrefabIndex);
         soundManager.PlaySelectClip();
-        tutorialManager.SelectBlock();
     }
 
     public void OnPointerEnter(PointerEventData eventData)

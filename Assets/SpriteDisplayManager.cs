@@ -54,6 +54,10 @@ public class SpriteDisplayManager : DisplayManager
     {
     }
 
+    public override void Hover()
+    {
+    }
+
     public override void Shadow()
     {
         renderer.color = colorDatabase.invisibleColor;

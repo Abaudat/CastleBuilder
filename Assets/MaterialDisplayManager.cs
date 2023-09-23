@@ -23,6 +23,11 @@ public class MaterialDisplayManager : DisplayManager
         renderer.material = materialDatabase.selectMaterial;
     }
 
+    public override void Hover()
+    {
+        renderer.material = materialDatabase.hoverMaterial;
+    }
+
     public override void Shadow()
     {
         renderer.material = materialDatabase.shadowMeterial;

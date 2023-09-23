@@ -8,6 +8,8 @@ public abstract class DisplayManager : MonoBehaviour
 
     public abstract void Select();
 
+    public abstract void Hover();
+
     public abstract void Shadow();
 
     public abstract void HighlightSignal();

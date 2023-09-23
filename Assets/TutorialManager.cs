@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class TutorialManager : MonoBehaviour
@@ -20,6 +21,46 @@ public class TutorialManager : MonoBehaviour
                 playModeTutorial.SetActive(false);
             }
         }
+    }
+
+    private void Start()
+    {
+        CubeGridEditor.EditModeStarted += EditModeStartedHandler;
+        CubeGridEditor.SignalEditModeStarted += SignalEditModeStartedHandler;
+        PlayManager.StartPlaying += StartPlayingHandler;
+        CubeGridEditor.CurrentPrefabIndexChanged += CurrentPrefabIndexChangedHandler;
+        CubeGrid.ElementReplaced += ElementReplacedHandler;
+        EditLayerManager.LayerChanged += LayerChangedHandler;
+    }
+
+    private void EditModeStartedHandler(object sender, EventArgs eventArgs)
+    {
+        ToggleEditModeTutorial();
+    }
+
+    private void SignalEditModeStartedHandler(object sender, EventArgs eventArgs)
+    {
+        ToggleElectricityPanel();
+    }
+
+    private void StartPlayingHandler(object sender, EventArgs eventArgs)
+    {
+        TogglePlayModeTutorial();
+    }
+
+    private void CurrentPrefabIndexChangedHandler(object sender, EventArgs eventArgs)
+    {
+        SelectBlock();
+    }
+
+    private void ElementReplacedHandler(object sender, EventArgs eventArgs)
+    {
+        PlaceBlock();
+    }
+
+    private void LayerChangedHandler(object sender, EventArgs eventArgs)
+    {
+        ChangeFloor();
     }
 
     public void ToggleEditModeTutorial()
@@ -50,16 +91,11 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    public void ShowNoChestPanel()
-    {
-        noChestPanel.SetActive(true);
-    }
-
     public void SelectBlock()
     {
-        if (!blockSelected && !PlayerPrefs.HasKey("blockPlacmentTutorialSeen"))
+        if (!blockSelected && !PlayerPrefs.HasKey("blockPlacementTutorialSeen"))
         {
-            PlayerPrefs.SetString("blockPlacmentTutorialSeen", "true");
+            PlayerPrefs.SetString("blockPlacementTutorialSeen", "true");
             blockSelected = true;
             blockSelectionPanel.SetActive(false);
             blockPlacementPanel.SetActive(true);
