@@ -1,15 +1,17 @@
+using System;
 using UnityEngine;
 
 public class PlayManager : MonoBehaviour
 {
+    public static event EventHandler StartPlaying;
+
     public Transform playerSpawnPosition;
-    public GameObject playerPrefab, winPanel, losePanel, editCamera;
+    public GameObject playerPrefab, winPanel, losePanel, editCamera, noChestPanel;
 
     private CubeGridEditor cubeGridEditor;
     private CubeGrid cubeGrid;
-    private TutorialManager tutorialManager;
+    private CubeGridInstanceManager cubeGridInstanceManager;
 
-    bool isExploring = false;
     bool isValidating = false;
     GameObject exploringPlayer;
 
@@ -17,37 +19,14 @@ public class PlayManager : MonoBehaviour
     {
         cubeGridEditor = FindObjectOfType<CubeGridEditor>();
         cubeGrid = FindObjectOfType<CubeGrid>();
-        tutorialManager = FindObjectOfType<TutorialManager>();
+        cubeGridInstanceManager = FindObjectOfType<CubeGridInstanceManager>();
     }
 
     private void Update()
     {
-        if (isExploring)
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                StopExploring();
-            }
-        }
-        if (isValidating)
-        {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                StopPlaying();
-            }
-        }
-    }
-
-    public void StartExploring(int x, int y, int z)
-    {
-        if (!isExploring)
-        {
-            editCamera.SetActive(false);
-            cubeGrid.PrepareForPlay();
-            isExploring = true;
-            exploringPlayer = Instantiate(playerPrefab, new Vector3(x, y, z), Quaternion.identity);
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            StopPlaying();
         }
     }
 
@@ -55,59 +34,64 @@ public class PlayManager : MonoBehaviour
     {
         if (!isValidating)
         {
-            tutorialManager.TogglePlayModeTutorial();
-            editCamera.SetActive(false);
-            cubeGrid.PrepareForPlay();
-            if (exploringPlayer != null)
+            if (cubeGrid.ContainsAtLeastOneChest())
             {
-                Destroy(exploringPlayer);
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                if (exploringPlayer != null)
+                {
+                    Destroy(exploringPlayer);
+                }
+                isValidating = true;
+                exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
+                cubeGridEditor.StopEditing();
+                cubeGridInstanceManager.RecreateAllElements();
+                cubeGridInstanceManager.TriggerAllSelfdestructs();
+                cubeGridInstanceManager.EnableAllRigidbodies();
+                OnStartPlaying(EventArgs.Empty);
             }
-            isValidating = true;
-            exploringPlayer = Instantiate(playerPrefab, playerSpawnPosition.position, playerSpawnPosition.rotation);
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            else
+            {
+                noChestPanel.SetActive(true);
+            }
         }
-    }
-
-    public void StopExploring()
-    {
-        isExploring = false;
-        Destroy(exploringPlayer);
-        cubeGridEditor.StartEditing();
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
     }
 
     public void StopPlaying()
     {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
         isValidating = false;
         Destroy(exploringPlayer);
         cubeGridEditor.StartEditing();
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
     }
 
     public void Success()
     {
         if (isValidating)
         {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             isValidating = false;
             exploringPlayer.GetComponent<PlayerMover>().canMove = false;
             winPanel.SetActive(true);
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
         }
     }
 
     public void Die()
     {
-        if (isValidating || isExploring)
+        if (isValidating)
         {
-            isValidating = isExploring = false;
-            exploringPlayer.GetComponent<PlayerMover>().canMove = false;
-            losePanel.SetActive(true);
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            isValidating = false;
+            exploringPlayer.GetComponent<PlayerMover>().canMove = false;
+            losePanel.SetActive(true);
         }
+    }
+
+    protected virtual void OnStartPlaying(EventArgs e)
+    {
+        StartPlaying?.Invoke(this, e);
     }
 }

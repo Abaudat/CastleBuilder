@@ -1,579 +1,374 @@
-using System.IO;
-using System.Linq;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using TMPro;
-using UnityEngine.UI;
-using System;
 
 public class CubeGridEditor : MonoBehaviour
 {
-    public GameObject editCamera, editPanel, editLayerPlanePrefab, roof, electricityLinePrefab;
-    public Transform electricityLinesParent;
-    public CubeGrid cubeGrid;
-    public EventSystem eventSystem;
-    public Material phantomMaterial;
-    public TMP_InputField exportInput, importInput;
-    public EditCameraMover editCameraMover;
-    public Slider floorSlider;
-    public TMP_Text floorText;
+    public static event EventHandler<HoveredCellChangedEventArgs> HoveredCellChanged;
+    public static event EventHandler EditModeStarted;
+    public static event EventHandler FreeEditModeStarted;
+    public static event EventHandler<ElementEventArgs> SelectEditModeStarted;
+    public static event EventHandler<SignalEditModeStartedEventArgs> SignalEditModeStarted;
+    public static event EventHandler CurrentRotationChanged;
+    public static event EventHandler CurrentPrefabIndexChanged;
 
-    private Camera editCameraComponent;
-    private PlayManager playManager;
+    public EventSystem eventSystem;
+    public Camera editCameraComponent;
+    public Vector3Int currentHoveredCell;
+    public Vector3Int currentSignalTarget, currentSelectedCell;
+    public SignalTargetType currentSignalTargetType;
+
+    public int currentPrefabIndex;
+    public Rotation currentRotation = Rotation.NORTH;
+    public EditMode currentEditMode = EditMode.FREE;
+
+    private CubeGridInstanceManager cubeGridInstanceCreator;
+    private CubeGrid cubeGrid;
     private SoundManager soundManager;
-    private TutorialManager tutorialManager;
-    private int currentX, currentY, currentZ;
-    private GameObject phantomCube, editLayerPlane;
-    private bool isEditing, isEditingSignals;
-    private int currentPrefabIndex = 1;
-    private Rotation currentRotation = Rotation.NORTH;
-    private Vector3Int? currentSignalProducerCoords;
-    private Vector3Int? currentSignalConsumerCoords;
+
+    private bool isEditing;
+
+    private void Awake()
+    {
+        cubeGridInstanceCreator = FindObjectOfType<CubeGridInstanceManager>();
+        cubeGrid = FindObjectOfType<CubeGrid>();
+        soundManager = FindObjectOfType<SoundManager>();
+    }
 
     private void Start()
     {
-        playManager = FindObjectOfType<PlayManager>();
-        soundManager = FindObjectOfType<SoundManager>();
-        tutorialManager = FindObjectOfType<TutorialManager>();
-        editCameraComponent = editCamera.GetComponent<Camera>();
+        EditLayerManager.LayerChanged += LayerChangedHandler;
     }
 
     private void Update()
     {
-        if (isEditing)
+        //TODO: Only prevent creation/deletion if over UI, allow right click to back out of modes and other keys
+        if (isEditing && !eventSystem.IsPointerOverGameObject())
         {
-            if (isEditingSignals)
+            ComputeHoveredCell(currentHoveredCell.y);
+            if (Input.GetKeyDown(KeyCode.Mouse0))
             {
-                if (!eventSystem.IsPointerOverGameObject())
+                switch (currentEditMode)
                 {
-                    Vector3Int? cursorCell = GetCursorCell();
-                    if (cursorCell.HasValue)
-                    {
-                        ChangeCurrentCellSignalMode(cursorCell.Value.x, cursorCell.Value.y, cursorCell.Value.z);
-                    }
-                    if (Input.GetKeyDown(KeyCode.Mouse0))
-                    {
-                        LinkSignals();
-                    }
-                    if (Input.GetKeyDown(KeyCode.Mouse1))
-                    {
-                        UnlinkSignals();
-                    }
-                    if (Input.GetKeyDown(KeyCode.Escape))
-                    {
-                        ClearSignals();
-                        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
-                    }
+                    case EditMode.SIGNAL:
+                        LeftClickSignalMode();
+                        break;
+                    case EditMode.FREE:
+                        LeftClickDownEditMode();
+                        break;
+                    case EditMode.SELECT:
+                        // TODO: Allow selecting another
+                        break;
                 }
             }
-            else
+            else if (Input.GetKey(KeyCode.Mouse0))
             {
-                if (!eventSystem.IsPointerOverGameObject())
+                switch (currentEditMode)
                 {
-                    ChangeCellToHovered();
-                    if (Input.GetKey(KeyCode.Mouse0))
-                    {
-                        if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
-                        {
-                            tutorialManager.PlaceBlock();
-                            ChangeSelectedElement(currentPrefabIndex);
-                            soundManager.PlayBuildSound();
-                        }
-                    }
-                    if (Input.GetKey(KeyCode.Mouse1))
-                    {
-                        if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
-                        {
-                            soundManager.PlayDestroySound();
-                            ChangeSelectedElement(0);
-                            GeneratePhantom();
-                        }
-                    }
-                }
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
-                    {
-                        currentRotation = currentRotation.Rotate();
-                        GeneratePhantom();
-                    }
-                    else
-                    {
-                        RotateCurrent();
-                    }
-                    soundManager.PlayRotateSound();
-                }
-                else if (Input.GetKeyDown(KeyCode.P))
-                {
-                    StartExploring();
+                    case EditMode.SIGNAL:
+                        break;
+                    case EditMode.SELECT:
+                        break;
+                    case EditMode.FREE:
+                        LeftClickHeldEditMode();
+                        break;
                 }
             }
-            if (Input.GetKeyDown(KeyCode.R))
+            else if (Input.GetKeyDown(KeyCode.Mouse1))
             {
-                tutorialManager.ChangeFloor();
-                ChangeLayer(currentY + 1);
-            }
-            else if (Input.GetKeyDown(KeyCode.F))
-            {
-                tutorialManager.ChangeFloor();
-                ChangeLayer(currentY - 1);
-            }
-            else if (Input.GetKeyDown(KeyCode.Space))
-            {
-                StartPlaying();
-            }
-        }
-    }
-
-    private void LinkSignals()
-    {
-        Vector3Int? cursorCell = GetCursorCell();
-        if (cursorCell.HasValue)
-        {
-            int x = cursorCell.Value.x;
-            int y = cursorCell.Value.y;
-            int z = cursorCell.Value.z;
-            if (x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
-            {
-                GameObject instance = cubeGrid.GetInstance(x, y, z);
-                SignalProducer producer = null;
-                SignalConsumer consumer = null;
-                if (instance != null)
+                switch (currentEditMode)
                 {
-                    producer = instance.TryGetComponentInChildren<SignalProducer>();
-                    consumer = instance.TryGetComponentInChildren<SignalConsumer>();
-                }
-                if (currentSignalConsumerCoords.HasValue)
-                {
-                    if (producer != null)
-                    {
-                        bool consumerAdded = cubeGrid.AddConsumerToProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
-                        if (consumerAdded)
-                        {
-                            soundManager.PlayElectricityLinkSound();
-                        }
-                    } else if (consumer != null)
-                    {
-                        if (!currentSignalConsumerCoords.Value.Equals(new Vector3Int(x, y, z)))
-                        {
-                            currentSignalConsumerCoords = new Vector3Int(x, y, z);
-                            soundManager.PlayElectricitySelectSound();
-                        }
-                    }
-                    else
-                    {
-                        ClearSignals();
-                        soundManager.PlayElectricityUnselectSound();
-                    }
-                } else if (currentSignalProducerCoords.HasValue)
-                {
-                    if (consumer != null)
-                    {
-                        bool consumerAdded = cubeGrid.AddConsumerToProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
-                        if (consumerAdded)
-                        {
-                            soundManager.PlayElectricityLinkSound();
-                        }
-                    }
-                    else if (producer != null)
-                    {
-                        if (!currentSignalProducerCoords.Value.Equals(new Vector3Int(x, y, z)))
-                        {
-                            currentSignalProducerCoords = new Vector3Int(x, y, z);
-                            soundManager.PlayElectricitySelectSound();
-                        }
-                    }
-                    else
-                    {
-                        ClearSignals();
-                        soundManager.PlayElectricityUnselectSound();
-                    }
-                }
-                else
-                {
-                    if (producer != null)
-                    {
-                        currentSignalProducerCoords = new Vector3Int(x, y, z);
-                        soundManager.PlayElectricitySelectSound();
-                    }
-                    else if (consumer != null)
-                    {
-                        currentSignalConsumerCoords = new Vector3Int(x, y, z);
-                        soundManager.PlayElectricitySelectSound();
-                    }
-                    else
-                    {
-                        ClearSignals();
-                    }
-                }
-                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
-                RecreateElectricityLines();
-            }
-        }
-    }
-
-    private void UnlinkSignals()
-    {
-        Vector3Int? cursorCell = GetCursorCell();
-        if (cursorCell.HasValue)
-        {
-            int x = cursorCell.Value.x;
-            int y = cursorCell.Value.y;
-            int z = cursorCell.Value.z;
-            if (x >= 0 && x < cubeGrid.width && y >= 0 && y < cubeGrid.height && z >= 0 && z < cubeGrid.depth)
-            {
-                GameObject instance = cubeGrid.GetInstance(x, y, z);
-                SignalProducer producer = null;
-                SignalConsumer consumer = null;
-                if (instance != null)
-                {
-                    producer = instance.TryGetComponentInChildren<SignalProducer>();
-                    consumer = instance.TryGetComponentInChildren<SignalConsumer>();
-                }
-                if (currentSignalConsumerCoords.HasValue)
-                {
-                    if (producer != null && cubeGrid.ProducerContainsConsumer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z))
-                    {
-                        cubeGrid.RemoveConsumerFromProducer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z, x, y, z);
-                        soundManager.PlayElectricityUnlinkSound();
-                    }
-                    else
-                    {
-                        ClearSignals();
-                        soundManager.PlayElectricityUnselectSound();
-                    }
-                }
-                else if (currentSignalProducerCoords.HasValue)
-                {
-                    if (consumer != null && cubeGrid.ProducerContainsConsumer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z))
-                    {
-                        cubeGrid.RemoveConsumerFromProducer(x, y, z, currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z);
-                        soundManager.PlayElectricityUnlinkSound();
-                    }
-                    else
-                    {
-                        ClearSignals();
-                        soundManager.PlayElectricityUnselectSound();
-                    }
-                }
-                else
-                {
-                    ClearSignals();
-                }
-                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
-                RecreateElectricityLines();
-            }
-        }
-    }
-
-    private void RecreateElectricityLines()
-    {
-        ClearElectricitryLines();
-        if (currentSignalConsumerCoords.HasValue)
-        {
-            foreach (Vector3Int producerCoord in cubeGrid.ProducersForConsumer(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z))
-            {
-                if (producerCoord.y == currentY || currentSignalConsumerCoords.Value.y == currentY)
-                {
-                    GameObject electricityLine = Instantiate(electricityLinePrefab, electricityLinesParent);
-                    electricityLine.GetComponent<LineRenderer>().SetPosition(0, producerCoord);
-                    electricityLine.GetComponent<LineRenderer>().SetPosition(1, new Vector3(currentSignalConsumerCoords.Value.x, currentSignalConsumerCoords.Value.y, currentSignalConsumerCoords.Value.z));
-                    if (currentSignalConsumerCoords.Value.y < currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f / (1 + currentY - currentSignalConsumerCoords.Value.y);
-                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
-                    }
-                    else if (currentSignalConsumerCoords.Value.y > currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f * (1 + currentSignalConsumerCoords.Value.y - currentY);
-                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
-                    }
-                    if (producerCoord.y < currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f / (1 + currentY - producerCoord.y);
-                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
-                    }
-                    else if (producerCoord.y > currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f * (1 + producerCoord.y - currentY);
-                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
-                    }
+                    case EditMode.SIGNAL:
+                    case EditMode.SELECT:
+                        soundManager.PlayCancelClip();
+                        SetFreeEditMode(); //TODO: Set a flag on getKeyDown, use it in GetKey so we don't back out of mode then immediately delete a block
+                        break;
+                    case EditMode.FREE:
+                        RightClickEditMode();
+                        break;
                 }
             }
-        }
-        else if (currentSignalProducerCoords.HasValue)
-        {
-            foreach (Vector3Int consumerCoord in cubeGrid.ConsumersForProducer(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z))
+            else if (Input.GetKey(KeyCode.Mouse1))
             {
-                if (consumerCoord.y == currentY || currentSignalProducerCoords.Value.y == currentY)
+                switch (currentEditMode)
                 {
-                    GameObject electricityLine = Instantiate(electricityLinePrefab, electricityLinesParent);
-                    electricityLine.GetComponent<LineRenderer>().SetPosition(0, new Vector3(currentSignalProducerCoords.Value.x, currentSignalProducerCoords.Value.y, currentSignalProducerCoords.Value.z));
-                    electricityLine.GetComponent<LineRenderer>().SetPosition(1, consumerCoord);
-                    if (currentSignalProducerCoords.Value.y < currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f / (1 + currentY - currentSignalProducerCoords.Value.y);
-                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
-                    }
-                    else if (currentSignalProducerCoords.Value.y > currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().startWidth = 0.1f * (1 + currentSignalProducerCoords.Value.y - currentY);
-                        electricityLine.GetComponent<LineRenderer>().startColor = new Color(1, 1, 1, 0);
-                    }
-                    if (consumerCoord.y < currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f / (1 + currentY - consumerCoord.y);
-                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
-                    }
-                    else if (consumerCoord.y > currentY)
-                    {
-                        electricityLine.GetComponent<LineRenderer>().endWidth = 0.1f * (1 + consumerCoord.y - currentY);
-                        electricityLine.GetComponent<LineRenderer>().endColor = new Color(1, 1, 1, 0);
-                    }
+                    case EditMode.SIGNAL:
+                    case EditMode.SELECT:
+                        break;
+                    case EditMode.FREE:
+                        RightClickEditMode();
+                        break;
                 }
             }
-        }
-
-    }
-
-    private void ClearElectricitryLines()
-    {
-        foreach (Transform line in electricityLinesParent) //TODO: Add pooling
-        {
-            Destroy(line.gameObject);
-        }
-    }
-
-    private void ClearSignals()
-    {
-        currentSignalConsumerCoords = null;
-        currentSignalProducerCoords = null;
-    }
-
-    private void ChangeCellToHovered()
-    {
-        Vector3Int? cursorCell = GetCursorCell();
-        if (cursorCell.HasValue)
-        {
-            ChangeCurrentCell(cursorCell.Value.x, cursorCell.Value.y, cursorCell.Value.z);
-        }
-    }
-
-    private Vector3Int? GetCursorCell()
-    {
-        Plane plane = new Plane(Vector3.up, Vector3.up * (currentY - 0.5f));
-        Ray ray = editCameraComponent.ScreenPointToRay(Input.mousePosition);
-        if (plane.Raycast(ray, out float enter))
-        {
-            Vector3 contactPoint = ray.GetPoint(enter);
-            return new Vector3Int(Mathf.RoundToInt(contactPoint.x), currentY, Mathf.RoundToInt(contactPoint.z));
-        }
-        return null;
-    }
-
-    public int getCurrentY()
-    {
-        return currentY;
-    }
-
-    public void ClearAll()
-    {
-        cubeGrid.ClearAll();
-    }
-
-    public void ChangeCurrentPrefabIndex(int index)
-    {
-        currentPrefabIndex = index;
-        DestroyPhantom();
-        GeneratePhantom();
-    }
-
-    public void Export()
-    {
-        using MemoryStream memoryStream = new MemoryStream();
-        using BinaryWriter writer = new BinaryWriter(memoryStream);
-        cubeGrid.Save(writer);
-        byte[] compressedBytes = PersistenceHelpers.compressBytes(memoryStream.ToArray());
-        byte[] bytesWithFlag = PersistenceHelpers.addFlag(compressedBytes, 2);
-        exportInput.text = PersistenceHelpers.bytesToStringLevelCode(bytesWithFlag);
-    }
-
-    public void Import()
-    {
-        string importString = importInput.text;
-        byte[] bytes = PersistenceHelpers.stringLevelCodeToBytes(importString);
-        int format = BitConverter.ToInt32(bytes.Take(4).ToArray());
-        BinaryReader reader;
-        if (format == 0 || format == 1)
-        {
-            reader = new BinaryReader(new MemoryStream(bytes.Skip(4).ToArray()));
-        }
-        else if (format == 2)
-        {
-            reader = new BinaryReader(new MemoryStream(PersistenceHelpers.decompressBytes(bytes.Skip(4).ToArray())));
-        }
-        else
-        {
-            Debug.LogWarning("Unknown map format " + format);
-            return;
-        }
-        cubeGrid.Load(reader, format);
-        cubeGrid.SetPlacementModeMaterials(currentY);
-    }
-
-    public void StartExploring()
-    {
-        StopEditing();
-        playManager.StartExploring(currentX, currentY, currentZ);
-    }
-
-    public void StartPlaying()
-    {
-        if (cubeGrid.ContainsAtLeastOneChest())
-        {
-            StopEditing();
-            playManager.StartValidating();
-        }
-        else
-        {
-            tutorialManager.ShowNoChestPanel();
+            else if (Input.GetKeyDown(KeyCode.E))
+            {
+                switch (currentEditMode)
+                {
+                    case EditMode.FREE:
+                        RotateFreeMode();
+                        break;
+                    case EditMode.SIGNAL:
+                    case EditMode.SELECT:
+                        RotateSelectMode();
+                        break;
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                switch (currentEditMode)
+                {
+                    case EditMode.FREE:
+                        break;
+                    case EditMode.SIGNAL:
+                    case EditMode.SELECT:
+                        SetFreeEditMode();
+                        break;
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.T))
+            {
+                switch (currentEditMode)
+                {
+                    case EditMode.SELECT:
+                        StartSignalEditModeForSelectedElement();
+                        break;
+                    case EditMode.FREE:
+                    case EditMode.SIGNAL:
+                        break;
+                }
+            }
         }
     }
 
     public void StartEditing()
     {
         isEditing = true;
-        editPanel.SetActive(true);
-        editCamera.SetActive(true);
-        roof.SetActive(false);
-        cubeGrid.RecreateAllElements();
-        GeneratePhantom();
-        editLayerPlane = Instantiate(editLayerPlanePrefab, new Vector3(4.5f, currentY - 0.49f, 4.5f), Quaternion.identity);
-        cubeGrid.SetPlacementModeMaterials(currentY);
+        SetFreeEditMode();
+        OnEditModeStarted(EventArgs.Empty);
     }
 
     public void StopEditing()
     {
-        cubeGrid.ChangeAllMaterials(x => x.Reset());
-        ClearElectricitryLines();
         isEditing = false;
-        editPanel.SetActive(false);
-        editCameraMover.MakeAllWallsVisible();
-        roof.SetActive(true);
-        DestroyPhantom();
-        Destroy(editLayerPlane);
     }
 
-    public void StartEditingSignals()
+    public void ChangeCurrentPrefabIndex(int newPrefabIndex)
     {
-        isEditingSignals = true;
-        DestroyPhantom();
-        cubeGrid.ChangeAllMaterials(x => x.Shadow());
-        cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
+        currentPrefabIndex = newPrefabIndex;
+        OnCurrentPrefabIndexChanged(EventArgs.Empty);
+        SetFreeEditMode();
     }
 
-    public void StopEditingSignals()
+    public void StartSignalEditModeForSelectedElement()
     {
-        isEditingSignals = false;
-        currentSignalConsumerCoords = null;
-        currentSignalProducerCoords = null;
-        GeneratePhantom();
-        cubeGrid.SetPlacementModeMaterials(currentY);
-        ClearElectricitryLines();
-    }
-
-    private void GeneratePhantom()
-    {
-        DestroyPhantom();
-        phantomCube = Instantiate(PrefabHelper.PrefabFromIndex(currentPrefabIndex), new Vector3(currentX, currentY, currentZ), currentRotation.ToWorldRot());
-        phantomCube.GetComponentInChildren<Renderer>().material = phantomMaterial;
-    }
-
-    private void DestroyPhantom()
-    {
-        if (phantomCube != null)
+        if (cubeGridInstanceCreator.IsElementSignalProducer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z))
         {
-            Destroy(phantomCube);
+            currentSignalTargetType = SignalTargetType.PRODUCER;
+        }
+        else if (cubeGridInstanceCreator.IsElementSignalConsumer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z))
+        {
+            currentSignalTargetType = SignalTargetType.CONSUMER;
+        }
+        else
+        {
+            Debug.Log("Neither a producer nor a consumer!");
+            return;
+        }
+        currentSignalTarget = currentSelectedCell;
+        currentEditMode = EditMode.SIGNAL;
+        OnSignalEditModeStarted(new(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z, currentSignalTargetType));
+    }
+
+    private void ComputeHoveredCell(int y)
+    {
+        Vector3Int? cellAtCursor = GetCellAtCursor(y);
+        if (cellAtCursor.HasValue && !cellAtCursor.Equals(currentHoveredCell))
+        {
+            Vector3Int previousHoveredCell = currentHoveredCell;
+            currentHoveredCell = ClampToBound(cellAtCursor.Value);
+            OnHoveredCellChanged(new(previousHoveredCell, currentHoveredCell));
         }
     }
 
-    public void ChangeLayer(int newY)
+    private Vector3Int ClampToBound(Vector3Int cell)
     {
-        if (newY >= 0 && newY < cubeGrid.height)
+        int clampedX = Mathf.Clamp(cell.x, 0, CubeGrid.WIDTH - 1);
+        int clampedY = Mathf.Clamp(cell.y, 0, CubeGrid.HEIGHT - 1);
+        int clampedZ = Mathf.Clamp(cell.z, 0, CubeGrid.DEPTH - 1);
+        return new Vector3Int(clampedX, clampedY, clampedZ);
+    }
+
+    private Vector3Int? GetCellAtCursor(int y)
+    {
+        Plane plane = new Plane(Vector3.up, Vector3.up * (y - 0.5f));
+        Ray ray = editCameraComponent.ScreenPointToRay(Input.mousePosition);
+        if (plane.Raycast(ray, out float enter))
         {
-            if (newY > currentY)
-            {
-                soundManager.PlayLayerUpSound();
-            }
-            else if (newY < currentY)
-            {
-                soundManager.PlayLayerDownSound();
-            }
-            currentY = newY;
-            editLayerPlane.transform.position = new Vector3(4.5f, currentY - 0.49f, 4.5f);
-            floorSlider.value = newY;
-            floorText.text = (newY + 1).ToString();
-            if (isEditingSignals)
-            {
-                cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
-                RecreateElectricityLines();
-            }
-            else
-            {
-                ChangeCurrentCell(currentX, currentY, currentZ);
-                cubeGrid.SetPlacementModeMaterials(currentY);
-            }
+            Vector3 contactPoint = ray.GetPoint(enter);
+            return new Vector3Int(Mathf.RoundToInt(contactPoint.x), y, Mathf.RoundToInt(contactPoint.z));
         }
+        return null;
     }
 
-    public void ChangeLayer(float newY)
+    private void LeftClickSignalMode()
     {
-        ChangeLayer(Mathf.FloorToInt(newY+0.5f));
-    }
-
-    public void ChangeCurrentCell(int x, int y, int z)
-    {
-        if(cubeGrid.IsInBounds(x, y, z))
+        if (currentSignalTarget != null)
         {
-            if (!cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+            if (currentSignalTargetType == SignalTargetType.PRODUCER && cubeGridInstanceCreator.IsElementSignalConsumer(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
             {
-                cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.Reset());
+                if (cubeGrid.ProducerContainsConsumer(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z, currentSignalTarget.x, currentSignalTarget.y, currentSignalTarget.z))
+                {
+                    cubeGrid.RemoveConsumerFromProducer(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z, currentSignalTarget.x, currentSignalTarget.y, currentSignalTarget.z);
+                }
+                else
+                {
+                    cubeGrid.AddConsumerToProducer(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z, currentSignalTarget.x, currentSignalTarget.y, currentSignalTarget.z);
+                }
             }
-            currentX = x;
-            currentY = y;
-            currentZ = z;
-            if (cubeGrid.IsElementEmpty(currentX, currentY, currentZ))
+            else if (currentSignalTargetType == SignalTargetType.CONSUMER && cubeGridInstanceCreator.IsElementSignalProducer(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
             {
-                GeneratePhantom();
-            }
-            else
-            {
-                DestroyPhantom();
-                cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.Select());
+                if (cubeGrid.ProducerContainsConsumer(currentSignalTarget.x, currentSignalTarget.y, currentSignalTarget.z, currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
+                {
+                    cubeGrid.RemoveConsumerFromProducer(currentSignalTarget.x, currentSignalTarget.y, currentSignalTarget.z, currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z);
+                }
+                else
+                {
+                    cubeGrid.AddConsumerToProducer(currentSignalTarget.x, currentSignalTarget.y, currentSignalTarget.z, currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z);
+                }
             }
         }
     }
 
-    public void ChangeCurrentCellSignalMode(int x, int y, int z)
+    private void LeftClickDownEditMode()
     {
-        if (cubeGrid.IsInBounds(x, y, z))
+        if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
         {
-            currentX = x;
-            currentY = y;
-            currentZ = z;
-            cubeGrid.SetSignalModeMaterials(currentY, currentSignalProducerCoords, currentSignalConsumerCoords, new Vector3Int(currentX, currentY, currentZ));
+            currentSelectedCell = currentHoveredCell;
+            currentEditMode = EditMode.SELECT;
+            OnSelectEditModeStarted(new(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z));
+        }
+        else
+        {
+            cubeGrid.ChangeElement(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z, currentPrefabIndex, currentRotation);
         }
     }
 
-    public void RotateCurrent()
+    private void LeftClickHeldEditMode()
     {
-        cubeGrid.RotateElement(currentX, currentY, currentZ);
-        cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.Select());
+        if (cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
+        {
+            cubeGrid.ChangeElement(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z, currentPrefabIndex, currentRotation);
+        }
     }
 
-    public void ChangeSelectedElement(int prefabIndex)
+    private void RightClickEditMode()
     {
-        cubeGrid.ChangeElement(currentX, currentY, currentZ, prefabIndex, currentRotation);
-        cubeGrid.ChangeMaterial(currentX, currentY, currentZ, x => x.Select());
+        if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
+        {
+            cubeGrid.SetElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z);
+        }
+    }
+
+    private void RotateFreeMode()
+    {
+        currentRotation = currentRotation.Rotate();
+        OnCurrentRotationChanged(EventArgs.Empty);
+    }
+
+    private void RotateSelectMode()
+    {
+        cubeGrid.RotateElement(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z);
+    }
+
+    private void SetFreeEditMode()
+    {
+        currentEditMode = EditMode.FREE;
+        OnFreeEditModeStarted(EventArgs.Empty);
+    }
+
+    private void LayerChangedHandler(object sender, EditLayerManager.LayerChangedEventArgs layerChangedEventArgs)
+    {
+        ComputeHoveredCell(layerChangedEventArgs.newHeight);
+    }
+
+    protected virtual void OnHoveredCellChanged(HoveredCellChangedEventArgs e)
+    {
+        HoveredCellChanged?.Invoke(this, e);
+    }
+
+    protected virtual void OnEditModeStarted(EventArgs e)
+    {
+        EditModeStarted?.Invoke(this, e);
+    }
+
+    protected virtual void OnFreeEditModeStarted(EventArgs e)
+    {
+        FreeEditModeStarted?.Invoke(this, e);
+    }
+
+    protected virtual void OnSelectEditModeStarted(ElementEventArgs e)
+    {
+        SelectEditModeStarted?.Invoke(this, e);
+    }
+
+    protected virtual void OnSignalEditModeStarted(SignalEditModeStartedEventArgs e)
+    {
+        SignalEditModeStarted?.Invoke(this, e);
+    }
+
+    protected virtual void OnCurrentRotationChanged(EventArgs e)
+    {
+        CurrentRotationChanged?.Invoke(this, e);
+    }
+
+    protected virtual void OnCurrentPrefabIndexChanged(EventArgs e)
+    {
+        CurrentPrefabIndexChanged?.Invoke(this, e);
+    }
+
+    public enum SignalTargetType
+    {
+        PRODUCER,
+        CONSUMER
+    }
+
+    public enum EditMode
+    {
+        SELECT,
+        SIGNAL,
+        FREE
+    }
+
+    public class HoveredCellChangedEventArgs : EventArgs
+    {
+        public Vector3Int previousHoveredCell, newHoveredCell;
+
+        public HoveredCellChangedEventArgs(Vector3Int previousHoveredCell, Vector3Int newHoveredCell)
+        {
+            this.previousHoveredCell = previousHoveredCell;
+            this.newHoveredCell = newHoveredCell;
+        }
+    }
+
+    public class ElementEventArgs : EventArgs
+    {
+        public int x, y, z;
+
+        public ElementEventArgs(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+
+    public class SignalEditModeStartedEventArgs : ElementEventArgs
+    {
+        public SignalTargetType signalTargetType;
+
+        public SignalEditModeStartedEventArgs(int x, int y, int z, SignalTargetType signalTargetType) : base(x, y, z)
+        {
+            this.signalTargetType = signalTargetType;
+        }
     }
 }

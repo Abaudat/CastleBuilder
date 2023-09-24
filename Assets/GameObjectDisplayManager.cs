@@ -57,6 +57,10 @@ public class GameObjectDisplayManager : DisplayManager
     {
     }
 
+    public override void Hover()
+    {
+    }
+
     public override void Shadow()
     {
         gameObjects.ForEach(x => x.SetActive(false));

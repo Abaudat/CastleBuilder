@@ -7,7 +7,8 @@ public class EditCameraMover : MonoBehaviour
     public Transform castleCenter;
     public Material transparentMat, wallMat;
     public EventSystem eventSystem;
-    public CubeGridEditor cubeGridEditor;
+
+    private EditLayerManager editLayerManager;
 
     [SerializeField, Range(0f, 100f)]
     float cameraSpeed = 10f;
@@ -31,6 +32,11 @@ public class EditCameraMover : MonoBehaviour
     Vector2? previousMousePos;
     Vector3 rotationPivot;
 
+    private void Awake()
+    {
+        editLayerManager = FindObjectOfType<EditLayerManager>();
+    }
+
     void Update()
     {
         float xMoveIntent = Input.GetAxis("Horizontal");
@@ -52,7 +58,7 @@ public class EditCameraMover : MonoBehaviour
             else
             {
                 Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
-                Plane plane = new Plane(Vector3.up, Vector3.up * cubeGridEditor.getCurrentY());
+                Plane plane = new Plane(Vector3.up, Vector3.up * editLayerManager.currentHeight);
                 plane.Raycast(ray, out float enter);
                 rotationPivot = ray.GetPoint(enter);
             }
@@ -90,14 +96,6 @@ public class EditCameraMover : MonoBehaviour
             transform.position = clampedNewPos;
         }
         SetWallsMaterials();
-    }
-
-    public void MakeAllWallsVisible()
-    {
-        belowWall.material = wallMat;
-        rightWall.material = wallMat;
-        aboveWall.material = wallMat;
-        leftWall.material = wallMat;
     }
 
     void SetWallsMaterials()
