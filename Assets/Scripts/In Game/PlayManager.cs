@@ -63,6 +63,7 @@ public class PlayManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         isValidating = false;
         Destroy(exploringPlayer);
+        cubeGridInstanceManager.RecreateAllElements();
         cubeGridEditor.StartEditing();
     }
 

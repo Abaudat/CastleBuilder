@@ -6,4 +6,4 @@
 * Right click clears current block in placement mode
 * First person build mode
 * Local save of current build, so leaving doesn't erase everything
-* Electricity lines represented by wires
+* Select / Signal mode popup with info on selected block
