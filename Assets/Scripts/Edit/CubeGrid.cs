@@ -29,9 +29,9 @@ public class CubeGrid : MonoBehaviour
         }
     }
 
-    public void SetElementEmpty(int x, int y, int z)
+    public void SetElementEmpty(int x, int y, int z, bool notify = true)
     {
-        ChangeElement(x, y, z, 0, Rotation.NORTH);
+        ChangeElement(x, y, z, 0, Rotation.NORTH, notify);
     }
 
     public void RotateElement(int x, int y, int z)
@@ -40,10 +40,13 @@ public class CubeGrid : MonoBehaviour
         OnElementRotated(new(x, y, z, elementGrid[x, y, z]));
     }
 
-    public void ChangeElement(int x, int y, int z, int prefabIndex, Rotation rotation)
+    public void ChangeElement(int x, int y, int z, int prefabIndex, Rotation rotation, bool notify = true)
     {
         elementGrid[x, y, z] = new(rotation, prefabIndex);
-        OnElementReplaced(new(x, y, z, elementGrid[x, y, z]));
+        if (notify)
+        {
+            OnElementReplaced(new(x, y, z, elementGrid[x, y, z]));
+        }
     }
 
     public bool AddConsumerToProducer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
@@ -142,6 +145,21 @@ public class CubeGrid : MonoBehaviour
                 for (int k = 0; k < DEPTH; k++)
                 {
                     elementGrid[i, j, k].Load(reader, version);
+                }
+            }
+        }
+        OnGridLoaded(new(elementGrid));
+    }
+
+    public void ClearAll()
+    {
+        for (int i = 0; i < WIDTH; i++)
+        {
+            for (int j = 0; j < HEIGHT; j++)
+            {
+                for (int k = 0; k < DEPTH; k++)
+                {
+                    SetElementEmpty(i, j, k, false);
                 }
             }
         }

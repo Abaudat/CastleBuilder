@@ -159,6 +159,12 @@ public class CubeGridEditor : MonoBehaviour
         SetFreeEditMode();
     }
 
+    public void SetFreeEditMode()
+    {
+        currentEditMode = EditMode.FREE;
+        OnFreeEditModeStarted(EventArgs.Empty);
+    }
+
     public void StartSignalEditModeForSelectedElement()
     {
         if (cubeGridInstanceCreator.IsElementSignalProducer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z))
@@ -278,12 +284,6 @@ public class CubeGridEditor : MonoBehaviour
     private void RotateSelectMode()
     {
         cubeGrid.RotateElement(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z);
-    }
-
-    private void SetFreeEditMode()
-    {
-        currentEditMode = EditMode.FREE;
-        OnFreeEditModeStarted(EventArgs.Empty);
     }
 
     private void LayerChangedHandler(object sender, EditLayerManager.LayerChangedEventArgs layerChangedEventArgs)

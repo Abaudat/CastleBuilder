@@ -15,19 +15,37 @@ public class CubeGridPersistenceManager : MonoBehaviour
         cubeGrid = FindObjectOfType<CubeGrid>();
     }
 
-    public void Export()
+    public void ExportToUi()
+    {
+        exportInput.text = Export();
+    }
+
+    public string Export()
     {
         using MemoryStream memoryStream = new MemoryStream();
         using BinaryWriter writer = new BinaryWriter(memoryStream);
         cubeGrid.Save(writer);
         byte[] compressedBytes = PersistenceHelpers.compressBytes(memoryStream.ToArray());
         byte[] bytesWithFlag = PersistenceHelpers.addFlag(compressedBytes, 2);
-        exportInput.text = PersistenceHelpers.bytesToStringLevelCode(bytesWithFlag);
+        return PersistenceHelpers.bytesToStringLevelCode(bytesWithFlag);
     }
 
-    public void Import()
+    public void ImportFromUi()
     {
         string importString = importInput.text;
+        Import(importString);
+    }
+
+    public void ImportAutosavedLevel()
+    {
+        if (PlayerPrefs.HasKey(EditModeAutosave.AUTOSAVE_PLAYER_PREFS_KEY))
+        {
+            Import(PlayerPrefs.GetString(EditModeAutosave.AUTOSAVE_PLAYER_PREFS_KEY));
+        }
+    }
+
+    public void Import(string importString)
+    {
         byte[] bytes = PersistenceHelpers.stringLevelCodeToBytes(importString);
         int format = BitConverter.ToInt32(bytes.Take(4).ToArray());
         BinaryReader reader;
