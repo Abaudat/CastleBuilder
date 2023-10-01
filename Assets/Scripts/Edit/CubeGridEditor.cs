@@ -25,6 +25,7 @@ public class CubeGridEditor : MonoBehaviour
     private CubeGridInstanceManager cubeGridInstanceCreator;
     private CubeGrid cubeGrid;
     private SoundManager soundManager;
+    private CubeGridUndoRedo cubeGridUndoRedo;
 
     private bool isEditing;
 
@@ -33,11 +34,13 @@ public class CubeGridEditor : MonoBehaviour
         cubeGridInstanceCreator = FindObjectOfType<CubeGridInstanceManager>();
         cubeGrid = FindObjectOfType<CubeGrid>();
         soundManager = FindObjectOfType<SoundManager>();
+        cubeGridUndoRedo = FindObjectOfType<CubeGridUndoRedo>();
     }
 
     private void Start()
     {
         EditLayerManager.LayerChanged += LayerChangedHandler;
+        CubeGrid.ElementReplaced += ElementChangedHandler;
     }
 
     private void Update()
@@ -136,6 +139,14 @@ public class CubeGridEditor : MonoBehaviour
                     case EditMode.SIGNAL:
                         break;
                 }
+            }
+            else if (Input.GetKeyDown(KeyCode.Y)) // TODO: Align with an input manager, this will be the wrong way around in other keyboard locales
+            {
+                cubeGridUndoRedo.Undo();
+            }
+            else if (Input.GetKeyDown(KeyCode.Z))
+            {
+                cubeGridUndoRedo.Redo();
             }
         }
     }
@@ -289,6 +300,17 @@ public class CubeGridEditor : MonoBehaviour
     private void LayerChangedHandler(object sender, EditLayerManager.LayerChangedEventArgs layerChangedEventArgs)
     {
         ComputeHoveredCell(layerChangedEventArgs.newHeight);
+    }
+
+    private void ElementChangedHandler(object sender, CubeGrid.ElementEventArgs elementEventArgs)
+    {
+        bool elementWasChanged = elementEventArgs.newElement.prefabIndex != elementEventArgs.previousElement.prefabIndex;
+        bool elementIsCurrentSelectFocus = currentSelectedCell.x == elementEventArgs.x && currentSelectedCell.y == elementEventArgs.y && currentSelectedCell.z == elementEventArgs.z;
+        bool elementIsCurrentSignalFocus = currentSignalTarget.x == elementEventArgs.x && currentSignalTarget.y == elementEventArgs.y && currentSignalTarget.z == elementEventArgs.z;
+        if (elementWasChanged && (currentEditMode == EditMode.SELECT && elementIsCurrentSelectFocus || currentEditMode == EditMode.SIGNAL && elementIsCurrentSignalFocus))
+        {
+            SetFreeEditMode();
+        }
     }
 
     protected virtual void OnHoveredCellChanged(HoveredCellChangedEventArgs e)

@@ -25,7 +25,8 @@ public class CubeGridPainter : MonoBehaviour
         CubeGridEditor.SignalEditModeStarted += SignalEditModeStartedHandler;
         CubeGridEditor.HoveredCellChanged += HoveredCellChangedHandler;
         PlayManager.StartPlaying += StartPlayingHandler;
-        CubeGrid.ElementRotated += ElementRotatedHandler;
+        CubeGrid.ElementReplaced += ElementChangedHandler;
+        CubeGrid.ElementRotated += ElementChangedHandler;
         CubeGrid.ElementConsumerAdded += ElementConsumerModifiedHandler;
         CubeGrid.ElementConsumerRemoved += ElementConsumerModifiedHandler;
     }
@@ -65,7 +66,7 @@ public class CubeGridPainter : MonoBehaviour
         Repaint();
     }
 
-    private void ElementRotatedHandler(object sender, CubeGrid.ElementEventArgs elementEventArgs)
+    private void ElementChangedHandler(object sender, CubeGrid.ElementEventArgs elementEventArgs)
     {
         Repaint();
     }

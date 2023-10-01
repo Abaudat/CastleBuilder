@@ -36,16 +36,18 @@ public class CubeGrid : MonoBehaviour
 
     public void RotateElement(int x, int y, int z)
     {
+        CubeGridElement previousElement = elementGrid[x, y, z];
         elementGrid[x, y, z].Rotate();
-        OnElementRotated(new(x, y, z, elementGrid[x, y, z]));
+        OnElementRotated(new(x, y, z, elementGrid[x, y, z], previousElement));
     }
 
     public void ChangeElement(int x, int y, int z, int prefabIndex, Rotation rotation, bool notify = true)
     {
+        CubeGridElement previousElement = elementGrid[x, y, z];
         elementGrid[x, y, z] = new(rotation, prefabIndex);
         if (notify)
         {
-            OnElementReplaced(new(x, y, z, elementGrid[x, y, z]));
+            OnElementReplaced(new(x, y, z, elementGrid[x, y, z], previousElement));
         }
     }
 
@@ -289,14 +291,15 @@ public class CubeGrid : MonoBehaviour
     public class ElementEventArgs : EventArgs
     {
         public int x, y, z;
-        public CubeGridElement newElement;
+        public CubeGridElement newElement, previousElement;
 
-        public ElementEventArgs(int x, int y, int z, CubeGridElement newElement)
+        public ElementEventArgs(int x, int y, int z, CubeGridElement newElement, CubeGridElement previousElement)
         {
             this.x = x;
             this.y = y;
             this.z = z;
             this.newElement = newElement;
+            this.previousElement = previousElement;
         }
     }
 
