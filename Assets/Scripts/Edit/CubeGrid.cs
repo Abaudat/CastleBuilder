@@ -44,6 +44,10 @@ public class CubeGrid : MonoBehaviour
     public void ChangeElement(int x, int y, int z, int prefabIndex, Rotation rotation, bool notify = true)
     {
         CubeGridElement previousElement = elementGrid[x, y, z];
+        foreach (Vector3Int producerCoords in ProducersForConsumer(x, y, z))
+        {
+            RemoveConsumerFromProducer(x, y, z, producerCoords.x, producerCoords.y, producerCoords.z);
+        }
         elementGrid[x, y, z] = new(rotation, prefabIndex);
         if (notify)
         {
@@ -74,6 +78,10 @@ public class CubeGrid : MonoBehaviour
     public bool ProducerContainsConsumer(int consumerX, int consumerY, int consumerZ, int producerX, int producerY, int producerZ)
     {
         CubeGridElement element = elementGrid[producerX, producerY, producerZ];
+        if (element == null)
+        {
+            return false;
+        }
         return element.consumerCoords.Contains(new Vector3Int(consumerX, consumerY, consumerZ));
     }
 

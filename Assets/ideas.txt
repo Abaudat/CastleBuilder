@@ -1,4 +1,3 @@
-* Clear all button
 * Add plug icon to consumers and lightning icon to producers
 * Different sounds when placing different elements
 * Keyboard shortcuts in build mode
@@ -8,3 +7,5 @@
 * Select / Signal mode popup with info on selected block
 * Electrical arc hazard
 * Bomb hazard
+* Random noise on textures to avoid noticable tiling
+* + and - in signal mode
