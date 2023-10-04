@@ -1079,6 +1079,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6663184279615048599}
+  - component: {fileID: 9039872708493029660}
   m_Layer: 0
   m_Name: Chest
   m_TagString: Untagged
@@ -1102,3 +1103,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9039872708493029660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 740753427764754575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbad69121ef271c46a251bd7381b68d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  elementName: Chest
+  elementDescription: Hide this well! Once the player finds and opens this chest,
+    they win!

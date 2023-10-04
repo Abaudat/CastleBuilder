@@ -120,6 +120,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5920197901106687713}
   - component: {fileID: 2483259623848902556}
+  - component: {fileID: 7979714907132673999}
   m_Layer: 0
   m_Name: CeilingToWall
   m_TagString: Untagged
@@ -164,6 +165,21 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &7979714907132673999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2403710167433340526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbad69121ef271c46a251bd7381b68d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  elementName: Rotating Ceiling (down)
+  elementDescription: When powered with electricity, this ceiling rotates to become
+    a wall.
 --- !u!1 &5718093257293636114
 GameObject:
   m_ObjectHideFlags: 0

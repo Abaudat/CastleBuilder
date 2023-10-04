@@ -7,17 +7,15 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
 {
     [SerializeField]
     private int elementPrefabIndex;
-    [SerializeField]
-    private string elementTitle, elementDescription;
     private CubeGridEditor cubeGridEditor;
     private SoundManager soundManager;
-    private TutorialManager tutorialManager;
     private EditTooltipManager editTooltipManager;
     private RectTransform thisRectTransform;
 
     private static readonly float TOOLTIP_DISPLAY_HOVER_TIME_SECONDS = 1;
 
     private Sprite previewSprite;
+    private string previewTitle, previewDescription;
     private float hoverTimeSeconds = 0;
     private bool isHovering = false;
 
@@ -25,16 +23,18 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
     {
         cubeGridEditor = FindObjectOfType<CubeGridEditor>();
         soundManager = FindObjectOfType<SoundManager>();
-        tutorialManager = FindObjectOfType<TutorialManager>();
         editTooltipManager = FindObjectOfType<EditTooltipManager>();
         thisRectTransform = GetComponent<RectTransform>();
         Image image = GetComponentInChildren<Image>();
+        GameObject typicalInstance = PrefabHelper.PrefabFromIndex(elementPrefabIndex);
         RuntimePreviewGenerator.GenerateModelPreviewAsync(tex => {
             previewSprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             image.sprite = previewSprite;
-        }, PrefabHelper.PrefabFromIndex(elementPrefabIndex).transform);
+        }, typicalInstance.transform);
+        previewTitle = typicalInstance.GetComponent<ElementDescriptor>().elementName;
+        previewDescription = typicalInstance.GetComponent<ElementDescriptor>().elementDescription;
         TMP_Text title = GetComponentInChildren<TMP_Text>();
-        title.SetText(elementTitle);
+        title.SetText(previewTitle);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -63,7 +63,7 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
         }
         if (hoverTimeSeconds > TOOLTIP_DISPLAY_HOVER_TIME_SECONDS)
         {
-            editTooltipManager.PopulateTooltip(previewSprite, elementTitle, elementDescription);
+            editTooltipManager.PopulateTooltip(previewSprite, previewTitle, previewDescription);
             editTooltipManager.DisplayTooltip(thisRectTransform);
         }
     }

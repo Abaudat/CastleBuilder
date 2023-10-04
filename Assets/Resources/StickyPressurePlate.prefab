@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5920197901106687713}
   - component: {fileID: 2395137211690498436}
+  - component: {fileID: 5143214289664289934}
   m_Layer: 0
   m_Name: StickyPressurePlate
   m_TagString: Untagged
@@ -54,6 +55,20 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &5143214289664289934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2403710167433340526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbad69121ef271c46a251bd7381b68d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  elementName: Sticky Pressure Plate
+  elementDescription: Same as a pressure plate, except it can only be triggered once.
 --- !u!1 &4420768946145177818
 GameObject:
   m_ObjectHideFlags: 0

@@ -322,6 +322,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8254244052454486923}
+  - component: {fileID: 2655313842582356856}
   m_Layer: 0
   m_Name: Corner
   m_TagString: Untagged
@@ -345,3 +346,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2655313842582356856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5873003293003456842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbad69121ef271c46a251bd7381b68d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  elementName: Corner
+  elementDescription: A ramp corner, useful to join two perpendicular ramps together.
