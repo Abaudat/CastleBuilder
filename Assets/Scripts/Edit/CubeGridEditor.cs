@@ -29,6 +29,7 @@ public class CubeGridEditor : MonoBehaviour
     private CubeGridUndoRedo cubeGridUndoRedo;
 
     private bool isEditing;
+    private bool rightClickExitTriggered = false;
 
     private void Awake()
     {
@@ -85,6 +86,7 @@ public class CubeGridEditor : MonoBehaviour
                     case EditMode.SIGNAL:
                     case EditMode.SELECT:
                         soundManager.PlayCancelClip();
+                        rightClickExitTriggered = true;
                         SetFreeEditMode(); //TODO: Set a flag on getKeyDown, use it in GetKey so we don't back out of mode then immediately delete a block
                         break;
                     case EditMode.FREE:
@@ -100,9 +102,16 @@ public class CubeGridEditor : MonoBehaviour
                     case EditMode.SELECT:
                         break;
                     case EditMode.FREE:
-                        RightClickEditMode();
+                        if (!rightClickExitTriggered)
+                        {
+                            RightClickEditMode();
+                        }
                         break;
                 }
+            }
+            else if (Input.GetKeyUp(KeyCode.Mouse1))
+            {
+                rightClickExitTriggered = false;
             }
             else if (Input.GetKeyDown(KeyCode.E))
             {
