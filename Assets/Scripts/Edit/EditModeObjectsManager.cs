@@ -19,6 +19,7 @@ public class EditModeObjectsManager : MonoBehaviour
     private void Start()
     {
         CubeGridEditor.EditModeStarted += EditModeStartedHandler;
+        CubeGridEditor.EditModeStopped += EditModeStoppedHandler;
         PlayManager.StartPlaying += StartPlayingHandler;
         EditLayerManager.LayerChanged += LayerChangedHandler;
     }
@@ -26,6 +27,11 @@ public class EditModeObjectsManager : MonoBehaviour
     private void EditModeStartedHandler(object sender, EventArgs eventArgs)
     {
         StartEditMode();
+    }
+
+    private void EditModeStoppedHandler(object sender, EventArgs eventArgs)
+    {
+        DeletePlane();
     }
 
     private void StartPlayingHandler(object sender, EventArgs eventArgs)
@@ -55,6 +61,11 @@ public class EditModeObjectsManager : MonoBehaviour
         rightWall.material = wallMat;
         aboveWall.material = wallMat;
         leftWall.material = wallMat;
+        DeletePlane();
+    }
+
+    private void DeletePlane()
+    {
         Destroy(editLayerPlane);
     }
 }

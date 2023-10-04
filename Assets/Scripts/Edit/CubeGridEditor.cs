@@ -6,6 +6,7 @@ public class CubeGridEditor : MonoBehaviour
 {
     public static event EventHandler<HoveredCellChangedEventArgs> HoveredCellChanged;
     public static event EventHandler EditModeStarted;
+    public static event EventHandler EditModeStopped;
     public static event EventHandler FreeEditModeStarted;
     public static event EventHandler<ElementEventArgs> SelectEditModeStarted;
     public static event EventHandler<SignalEditModeStartedEventArgs> SignalEditModeStarted;
@@ -161,6 +162,7 @@ public class CubeGridEditor : MonoBehaviour
     public void StopEditing()
     {
         isEditing = false;
+        OnEditModeStopped(EventArgs.Empty);
     }
 
     public void ChangeCurrentPrefabIndex(int newPrefabIndex)
@@ -321,6 +323,11 @@ public class CubeGridEditor : MonoBehaviour
     protected virtual void OnEditModeStarted(EventArgs e)
     {
         EditModeStarted?.Invoke(this, e);
+    }
+
+    protected virtual void OnEditModeStopped(EventArgs e)
+    {
+        EditModeStopped?.Invoke(this, e);
     }
 
     protected virtual void OnFreeEditModeStarted(EventArgs e)

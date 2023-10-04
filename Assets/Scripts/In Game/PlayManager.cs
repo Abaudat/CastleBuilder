@@ -24,7 +24,7 @@ public class PlayManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (isValidating && Input.GetKeyDown(KeyCode.Escape))
         {
             StopPlaying();
         }
