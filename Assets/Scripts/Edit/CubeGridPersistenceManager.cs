@@ -6,18 +6,20 @@ using UnityEngine;
 
 public class CubeGridPersistenceManager : MonoBehaviour
 {
-    public TMP_InputField exportInput, importInput;
+    public string currentLevelCode;
 
     private CubeGrid cubeGrid;
+    private LevelBrowserManager levelBrowserManager;
 
     private void Awake()
     {
         cubeGrid = FindObjectOfType<CubeGrid>();
+        levelBrowserManager = FindObjectOfType<LevelBrowserManager>();
     }
 
-    public void ExportToUi()
+    public void ExportForUpload()
     {
-        exportInput.text = Export();
+        currentLevelCode = Export();
     }
 
     public string Export()
@@ -30,10 +32,9 @@ public class CubeGridPersistenceManager : MonoBehaviour
         return PersistenceHelpers.bytesToStringLevelCode(bytesWithFlag);
     }
 
-    public void ImportFromUi()
+    public void ImportFromLevelBrowser()
     {
-        string importString = importInput.text;
-        Import(importString);
+        Import(levelBrowserManager.selectedLevelCode);
     }
 
     public void ImportAutosavedLevel()

@@ -13,15 +13,25 @@ public class EditLayerManager : MonoBehaviour
     [SerializeField]
     private TMP_Text floorText;
 
+    private CubeGridEditor cubeGridEditor;
+
+    private void Awake()
+    {
+        cubeGridEditor = FindObjectOfType<CubeGridEditor>();
+    }
+
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (cubeGridEditor.isEditing)
         {
-            ChangeCurrentLayerTo(currentHeight + 1);
-        }
-        else if (Input.GetKeyDown(KeyCode.F))
-        {
-            ChangeCurrentLayerTo(currentHeight - 1);
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ChangeCurrentLayerTo(currentHeight + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.F))
+            {
+                ChangeCurrentLayerTo(currentHeight - 1);
+            }
         }
     }
 
