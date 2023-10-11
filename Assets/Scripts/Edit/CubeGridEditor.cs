@@ -22,13 +22,13 @@ public class CubeGridEditor : MonoBehaviour
     public int currentPrefabIndex;
     public Rotation currentRotation = Rotation.NORTH;
     public EditMode currentEditMode = EditMode.FREE;
+    public bool isEditing;
 
     private CubeGridInstanceManager cubeGridInstanceCreator;
     private CubeGrid cubeGrid;
     private SoundManager soundManager;
     private CubeGridUndoRedo cubeGridUndoRedo;
 
-    private bool isEditing;
     private bool rightClickExitTriggered = false;
 
     private void Awake()

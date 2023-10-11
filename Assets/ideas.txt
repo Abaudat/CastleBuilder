@@ -9,3 +9,6 @@
 * Bomb hazard
 * Random noise on textures to avoid noticable tiling
 * + and - in signal mode
+
+TODO:
+- Clean up import from ui that's no longer needed
