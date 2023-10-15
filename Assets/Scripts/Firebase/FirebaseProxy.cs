@@ -1,35 +1,30 @@
-using Firebase;
-using Firebase.Database;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using System.Linq;
+using Newtonsoft.Json;
 
 public class FirebaseProxy : MonoBehaviour
 {
-    private DatabaseReference firebaseDatabaseReference;
+    private FirebaseRestClient firebaseRestClient;
 
     // Start is called before the first frame update
     void Awake()
     {
-        firebaseDatabaseReference = FirebaseDatabase.DefaultInstance.RootReference;
+        firebaseRestClient = FindObjectOfType<FirebaseRestClient>();
     }
 
     public Task SaveLevelAsync(Level_v1 level)
     {
-        return firebaseDatabaseReference.Child("levels").Child("v1").Push().SetRawJsonValueAsync(JsonUtility.ToJson(level));
+        return firebaseRestClient.SaveLevel(JsonConvert.SerializeObject(level));
     }
 
     public Task<List<Level_v1>> RetrieveAllLevelsAsync()
     {
-        return firebaseDatabaseReference.Child("levels").Child("v1").GetValueAsync().ContinueWith(task =>
+        return firebaseRestClient.GetLevels().ContinueWith(task =>
         {
-            DataSnapshot dataSnapshot = task.Result;
-            List<Level_v1> levels = new();
-            foreach(DataSnapshot child in dataSnapshot.Children)
-            {
-                levels.Add(JsonUtility.FromJson<Level_v1>(child.GetRawJsonValue()));
-            }
-            return levels;
+            Dictionary<string, Level_v1> levelList = JsonConvert.DeserializeObject<Dictionary<string, Level_v1>>(task.Result);
+            return levelList.Select(x => x.Value).ToList();
         });
     }
 }
