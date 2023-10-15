@@ -34,15 +34,19 @@ public class LevelBrowserManager : MonoBehaviour
         selectedLevelCode = level.levelCode;
     }
 
-    async public void PopulateLevelBrowser()
+    public void PopulateLevelBrowser()
     {
         levelDetailsPanel.SetActive(false);
         foreach (GameObject levelListEntry in instantiatedLevelListEntries)
         {
             Destroy(levelListEntry); //TODO add pooling
         }
-        List<Level_v1> levels = await firebaseProxy.RetrieveAllLevelsAsync();
-        foreach(Level_v1 level in levels)
+        firebaseProxy.RetrieveAllLevelsWithCallback(PopulateFromLevelList);
+    }
+
+    private void PopulateFromLevelList(List<Level_v1> levels)
+    {
+        foreach (Level_v1 level in levels)
         {
             GameObject levelListEntryGameObject = Instantiate(levelListEntryPrefab, levelList);
             LevelListEntry levelListEntry = levelListEntryGameObject.GetComponent<LevelListEntry>();
