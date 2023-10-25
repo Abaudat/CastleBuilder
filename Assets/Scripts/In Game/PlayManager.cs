@@ -6,7 +6,7 @@ public class PlayManager : MonoBehaviour
     public static event EventHandler StartPlaying;
 
     public Transform playerSpawnPosition;
-    public GameObject playerPrefab, validateWinPanel, validateLosePanel, playWinPanel, playLosePanel, editCamera, noChestPanel, levelBrowserPanel;
+    public GameObject playerPrefab, validateWinPanel, validateLosePanel, playWinPanel, playLosePanel, noChestPanel, levelBrowserPanel;
 
     private CubeGridEditor cubeGridEditor;
     private CubeGrid cubeGrid;
