@@ -19,6 +19,11 @@ public class LevelBrowserManager : MonoBehaviour
         firebaseProxy = FindObjectOfType<FirebaseProxy>();
     }
 
+    private void Start()
+    {
+        PopulateLevelBrowser();
+    }
+
     public void Browse()
     {
         levelBrowserPanel.SetActive(true);
