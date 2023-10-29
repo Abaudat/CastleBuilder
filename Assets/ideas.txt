@@ -8,6 +8,7 @@
 * Bomb hazard
 * Random noise on textures to avoid noticable tiling
 * + and - in signal mode
+* Save slots
 
 TODO:
 - Redesign all UI screens
@@ -25,3 +26,6 @@ TODO:
 - Add options for mouse sensitivity and volume
 - Add link mode button to signal mode popup
 - Fix bug where signals are not sent if trigger at play start
+- On select a block in edit mode -> Show details in select mode window. Get rid of tooltip
+- Make clear all undoable
+- Follow https://github.com/yasirkula/UnityRuntimePreviewGenerator to take btter preview of blocks

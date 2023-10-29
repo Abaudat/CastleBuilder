@@ -7,6 +7,8 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
 {
     [SerializeField]
     private int elementPrefabIndex;
+    [SerializeField]
+    private Image image;
     private CubeGridEditor cubeGridEditor;
     private SoundManager soundManager;
     private EditTooltipManager editTooltipManager;
@@ -25,8 +27,8 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
         soundManager = FindObjectOfType<SoundManager>();
         editTooltipManager = FindObjectOfType<EditTooltipManager>();
         thisRectTransform = GetComponent<RectTransform>();
-        Image image = GetComponentInChildren<Image>();
         GameObject typicalInstance = PrefabHelper.PrefabFromIndex(elementPrefabIndex);
+        RuntimePreviewGenerator.BackgroundColor = new(0, 0, 0, 0);
         RuntimePreviewGenerator.GenerateModelPreviewAsync(tex => {
             previewSprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             image.sprite = previewSprite;
