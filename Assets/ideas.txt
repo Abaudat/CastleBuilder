@@ -11,21 +11,17 @@
 * Save slots
 
 TODO:
-- Redesign all UI screens
-- Apply positional design to all UI screens
-- Add UI assets
 - Increase edit mode camera zoom out when at higher layers
 - Second pass on edit mode camera bounds (possibly depend on layer?)
 - Add texture to chest
 - Add texture to spikes
 - Merge signal and select modes (normal blocks => select mode, electrical blocks => signal mode)
-- Rework signal mode tutorial
+- Rework tutorial
 - Improve texture tiling
-- Change edit mode skybox to darker colors
 - Add input manager to rebind keys
 - Add options for mouse sensitivity and volume
 - Add link mode button to signal mode popup
 - Fix bug where signals are not sent if trigger at play start
 - On select a block in edit mode -> Show details in select mode window. Get rid of tooltip
 - Make clear all undoable
-- Follow https://github.com/yasirkula/UnityRuntimePreviewGenerator to take btter preview of blocks
+- Follow https://github.com/yasirkula/UnityRuntimePreviewGenerator to take better preview of blocks
