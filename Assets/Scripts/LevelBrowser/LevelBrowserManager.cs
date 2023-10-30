@@ -28,6 +28,7 @@ public class LevelBrowserManager : MonoBehaviour
     {
         levelBrowserPanel.SetActive(true);
         editCamera.SetActive(true);
+        PopulateLevelBrowser();
     }
 
     public void SelectLevel(Level_v1 level)
