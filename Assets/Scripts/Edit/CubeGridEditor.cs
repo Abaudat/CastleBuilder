@@ -10,8 +10,9 @@ public class CubeGridEditor : MonoBehaviour
     public static event EventHandler FreeEditModeStarted;
     public static event EventHandler<ElementEventArgs> SelectEditModeStarted;
     public static event EventHandler<SignalEditModeStartedEventArgs> SignalEditModeStarted;
+    public static event EventHandler BlockEditModeStarted;
     public static event EventHandler CurrentRotationChanged;
-    public static event EventHandler CurrentPrefabIndexChanged;
+    public static event EventHandler<PrefabIndexEventArgs> CurrentPrefabIndexChanged;
 
     public EventSystem eventSystem;
     public Camera editCameraComponent;
@@ -59,7 +60,10 @@ public class CubeGridEditor : MonoBehaviour
                         LeftClickSignalMode();
                         break;
                     case EditMode.FREE:
-                        LeftClickDownEditMode();
+                        LeftClickDownFreeEditMode();
+                        break;
+                    case EditMode.BLOCK:
+                        LeftClickDownBlockEditMode();
                         break;
                     case EditMode.SELECT:
                         // TODO: Allow selecting another
@@ -75,6 +79,8 @@ public class CubeGridEditor : MonoBehaviour
                     case EditMode.SELECT:
                         break;
                     case EditMode.FREE:
+                        break;
+                    case EditMode.BLOCK:
                         LeftClickHeldEditMode();
                         break;
                 }
@@ -87,10 +93,13 @@ public class CubeGridEditor : MonoBehaviour
                     case EditMode.SELECT:
                         soundManager.PlayCancelClip();
                         rightClickExitTriggered = true;
-                        SetFreeEditMode(); //TODO: Set a flag on getKeyDown, use it in GetKey so we don't back out of mode then immediately delete a block
+                        SetFreeEditMode();
                         break;
                     case EditMode.FREE:
-                        RightClickEditMode();
+                        RightClickFreeEditMode();
+                        break;
+                    case EditMode.BLOCK:
+                        RightClickBlockEditMode();
                         break;
                 }
             }
@@ -104,7 +113,13 @@ public class CubeGridEditor : MonoBehaviour
                     case EditMode.FREE:
                         if (!rightClickExitTriggered)
                         {
-                            RightClickEditMode();
+                            RightClickFreeEditMode();
+                        }
+                        break;
+                    case EditMode.BLOCK:
+                        if (!rightClickExitTriggered)
+                        {
+                            RightClickBlockEditMode();
                         }
                         break;
                 }
@@ -117,12 +132,14 @@ public class CubeGridEditor : MonoBehaviour
             {
                 switch (currentEditMode)
                 {
-                    case EditMode.FREE:
-                        RotateFreeMode();
+                    case EditMode.BLOCK:
+                        RotateBlockMode();
                         break;
                     case EditMode.SIGNAL:
                     case EditMode.SELECT:
                         RotateSelectMode();
+                        break;
+                    case EditMode.FREE:
                         break;
                 }
             }
@@ -134,6 +151,7 @@ public class CubeGridEditor : MonoBehaviour
                         break;
                     case EditMode.SIGNAL:
                     case EditMode.SELECT:
+                    case EditMode.BLOCK:
                         SetFreeEditMode();
                         break;
                 }
@@ -165,14 +183,20 @@ public class CubeGridEditor : MonoBehaviour
     public void ChangeCurrentPrefabIndex(int newPrefabIndex)
     {
         currentPrefabIndex = newPrefabIndex;
-        OnCurrentPrefabIndexChanged(EventArgs.Empty);
-        SetFreeEditMode();
+        OnCurrentPrefabIndexChanged(new(newPrefabIndex));
+        SetBlockEditMode();
     }
 
     public void SetFreeEditMode()
     {
         currentEditMode = EditMode.FREE;
         OnFreeEditModeStarted(EventArgs.Empty);
+    }
+
+    public void SetBlockEditMode()
+    {
+        currentEditMode = EditMode.BLOCK;
+        OnBlockEditModeStarted(EventArgs.Empty);
     }
 
     public void StartSignalEditModeForSelectedElement()
@@ -255,7 +279,7 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
-    private void LeftClickDownEditMode()
+    private void LeftClickDownBlockEditMode()
     {
         if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
         {
@@ -277,6 +301,24 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
+    private void LeftClickDownFreeEditMode()
+    {
+        if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
+        {
+            currentSelectedCell = currentHoveredCell;
+            if (cubeGridInstanceCreator.IsElementSignalProducer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z)
+                || cubeGridInstanceCreator.IsElementSignalConsumer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z))
+            {
+                StartSignalEditModeForSelectedElement();
+            }
+            else
+            {
+                currentEditMode = EditMode.SELECT;
+                OnSelectEditModeStarted(new(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z));
+            }
+        }
+    }
+
     private void LeftClickHeldEditMode()
     {
         if (cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
@@ -285,7 +327,20 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
-    private void RightClickEditMode()
+    private void RightClickBlockEditMode()
+    {
+        if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
+        {
+            cubeGrid.SetElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z);
+        }
+        else
+        {
+            soundManager.PlayCancelClip();
+            SetFreeEditMode();
+        }
+    }
+
+    private void RightClickFreeEditMode()
     {
         if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
         {
@@ -293,7 +348,7 @@ public class CubeGridEditor : MonoBehaviour
         }
     }
 
-    private void RotateFreeMode()
+    private void RotateBlockMode()
     {
         currentRotation = currentRotation.Rotate();
         OnCurrentRotationChanged(EventArgs.Empty);
@@ -316,7 +371,7 @@ public class CubeGridEditor : MonoBehaviour
         bool elementIsCurrentSignalFocus = currentSignalTarget.x == elementEventArgs.x && currentSignalTarget.y == elementEventArgs.y && currentSignalTarget.z == elementEventArgs.z;
         if (elementWasChanged && (currentEditMode == EditMode.SELECT && elementIsCurrentSelectFocus || currentEditMode == EditMode.SIGNAL && elementIsCurrentSignalFocus))
         {
-            SetFreeEditMode();
+            SetBlockEditMode();
         }
     }
 
@@ -350,12 +405,17 @@ public class CubeGridEditor : MonoBehaviour
         SignalEditModeStarted?.Invoke(this, e);
     }
 
+    protected virtual void OnBlockEditModeStarted(EventArgs e)
+    {
+        BlockEditModeStarted?.Invoke(this, e);
+    }
+
     protected virtual void OnCurrentRotationChanged(EventArgs e)
     {
         CurrentRotationChanged?.Invoke(this, e);
     }
 
-    protected virtual void OnCurrentPrefabIndexChanged(EventArgs e)
+    protected virtual void OnCurrentPrefabIndexChanged(PrefabIndexEventArgs e)
     {
         CurrentPrefabIndexChanged?.Invoke(this, e);
     }
@@ -370,7 +430,8 @@ public class CubeGridEditor : MonoBehaviour
     {
         SELECT,
         SIGNAL,
-        FREE
+        FREE,
+        BLOCK
     }
 
     public class HoveredCellChangedEventArgs : EventArgs
@@ -403,6 +464,16 @@ public class CubeGridEditor : MonoBehaviour
         public SignalEditModeStartedEventArgs(int x, int y, int z, SignalTargetType signalTargetType) : base(x, y, z)
         {
             this.signalTargetType = signalTargetType;
+        }
+    }
+
+    public class PrefabIndexEventArgs : EventArgs
+    {
+        public int prefabIndex;
+
+        public PrefabIndexEventArgs(int prefabIndex)
+        {
+            this.prefabIndex = prefabIndex;
         }
     }
 }

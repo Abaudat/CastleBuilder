@@ -20,6 +20,7 @@ public class SoundManager : MonoBehaviour
         CubeGrid.ElementConsumerRemoved += ElementConsumerRemovedHandler;
         EditLayerManager.LayerChanged += LayerChangedHandler;
         CubeGridEditor.SelectEditModeStarted += SelectEditModeStartedHandler;
+        CubeGridEditor.SignalEditModeStarted += SelectEditModeStartedHandler;
     }
 
     private void ElementReplacedHandler(object sender, CubeGrid.ElementEventArgs elementEventArgs)

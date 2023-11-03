@@ -82,6 +82,7 @@ public class CubeGridPainter : MonoBehaviour
                 PaintForSignalEditMode(cubeGridEditor.currentSignalTarget.x, cubeGridEditor.currentSignalTarget.y, cubeGridEditor.currentSignalTarget.z, cubeGridEditor.currentSignalTargetType);
                 break;
             case CubeGridEditor.EditMode.FREE:
+            case CubeGridEditor.EditMode.BLOCK:
                 PaintForFreeEditMode();
                 break;
         }
@@ -92,6 +93,7 @@ public class CubeGridPainter : MonoBehaviour
     {
         if (cubeGridInstanceCreator.GetInstance(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z) != null)
         {
+            bool isBlockEditMode = cubeGridEditor.currentEditMode == CubeGridEditor.EditMode.BLOCK;
             bool isFreeEditMode = cubeGridEditor.currentEditMode == CubeGridEditor.EditMode.FREE;
             bool isSignalEditMode = cubeGridEditor.currentEditMode == CubeGridEditor.EditMode.SIGNAL;
             bool isHoveredCellOfOppositeTypeAndUnlinked = (cubeGridEditor.currentSignalTargetType == CubeGridEditor.SignalTargetType.PRODUCER
@@ -100,7 +102,7 @@ public class CubeGridPainter : MonoBehaviour
                     || (cubeGridEditor.currentSignalTargetType == CubeGridEditor.SignalTargetType.CONSUMER
                     && cubeGridInstanceCreator.IsElementSignalProducer(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z)
                     && !cubeGrid.ProducersForConsumer(cubeGridEditor.currentSignalTarget.x, cubeGridEditor.currentSignalTarget.y, cubeGridEditor.currentSignalTarget.z).Contains(cubeGridEditor.currentHoveredCell));
-            if (isFreeEditMode || (isSignalEditMode && isHoveredCellOfOppositeTypeAndUnlinked))
+            if (isFreeEditMode || isBlockEditMode || (isSignalEditMode && isHoveredCellOfOppositeTypeAndUnlinked))
             {
                 ChangeMaterial(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z, x => x.Hover()); //TODO: Hover in red if about to unlink
             }

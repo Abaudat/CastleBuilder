@@ -20,6 +20,7 @@ public class EditSelectPopupManager : MonoBehaviour
     {
         CubeGridEditor.SelectEditModeStarted += OnElementSelectedHandler;
         CubeGridEditor.SignalEditModeStarted += OnElementSelectedHandler;
+        CubeGridEditor.CurrentPrefabIndexChanged += OnNewPrefabIndexHandler;
         CubeGridEditor.EditModeStopped += OnEditModeStoppedHandler;
         CubeGridEditor.FreeEditModeStarted += OnEditModeStoppedHandler;
     }
@@ -28,6 +29,11 @@ public class EditSelectPopupManager : MonoBehaviour
     {
         int prefabIndex = cubeGrid.elementGrid[elementEventArgs.x, elementEventArgs.y, elementEventArgs.z].prefabIndex;
         PopulateAndDisplayPopup(prefabIndex);
+    }
+
+    private void OnNewPrefabIndexHandler(object sender, CubeGridEditor.PrefabIndexEventArgs elementEventArgs)
+    {
+        PopulateAndDisplayPopup(elementEventArgs.prefabIndex);
     }
 
     private void OnEditModeStoppedHandler(object sender, EventArgs eventArgs)

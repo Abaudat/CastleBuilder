@@ -18,34 +18,25 @@ public class CubeGridPhantomManager : MonoBehaviour
 
     private void Start()
     {
-        CubeGridEditor.HoveredCellChanged += HoveredCellChangedHandler;
-        CubeGridEditor.CurrentRotationChanged += CurrentRotationChangedHandler;
-        CubeGridEditor.CurrentPrefabIndexChanged += CurrentPrefabIndexChangedHandler;
+        CubeGridEditor.HoveredCellChanged += ChangeHandler;
+        CubeGridEditor.CurrentRotationChanged += ChangeHandler;
+        CubeGridEditor.CurrentPrefabIndexChanged += ChangeHandler;
+        CubeGridEditor.FreeEditModeStarted += ChangeHandler;
         PlayManager.StartPlaying += StartPlayingHandler;
         CubeGrid.ElementReplaced += ElementReplacedHandler;
     }
 
-    private void HoveredCellChangedHandler(object sender, CubeGridEditor.HoveredCellChangedEventArgs hoveredCellChangedEventArgs)
+    private void ChangeHandler(object sender, EventArgs eventArgs)
     {
-        if(cubeGridInstanceCreator.GetInstance(hoveredCellChangedEventArgs.newHoveredCell.x, hoveredCellChangedEventArgs.newHoveredCell.y, hoveredCellChangedEventArgs.newHoveredCell.z) == null
-             && cubeGridEditor.currentEditMode == CubeGridEditor.EditMode.FREE)
+        if (cubeGridInstanceCreator.GetInstance(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z) == null
+             && cubeGridEditor.currentEditMode == CubeGridEditor.EditMode.BLOCK)
         {
-            CreatePhantom(hoveredCellChangedEventArgs.newHoveredCell.x, hoveredCellChangedEventArgs.newHoveredCell.y, hoveredCellChangedEventArgs.newHoveredCell.z);
+            CreatePhantom(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z);
         }
         else
         {
             DestroyPhantom();
         }
-    }
-
-    private void CurrentRotationChangedHandler(object sender, EventArgs eventArgs)
-    {
-        CreatePhantom(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z);
-    }
-
-    private void CurrentPrefabIndexChangedHandler(object sender, EventArgs eventArgs)
-    {
-        CreatePhantom(cubeGridEditor.currentHoveredCell.x, cubeGridEditor.currentHoveredCell.y, cubeGridEditor.currentHoveredCell.z);
     }
 
     private void ElementReplacedHandler(object sender, CubeGrid.ElementEventArgs elementEventArgs)

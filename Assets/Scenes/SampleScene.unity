@@ -15986,7 +15986,7 @@ PrefabInstance:
     - target: {fileID: 2014848741599150459, guid: f49d170eff1c584419a63f1d2320450c,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 403.1948
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2014848741599150459, guid: f49d170eff1c584419a63f1d2320450c,
         type: 3}
@@ -37367,7 +37367,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 71.03984, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2559336920412615926
 GameObject:
