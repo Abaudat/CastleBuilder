@@ -29,6 +29,7 @@ public class UiBuildElement : MonoBehaviour, IPointerDownHandler, IPointerEnterH
         thisRectTransform = GetComponent<RectTransform>();
         GameObject typicalInstance = PrefabHelper.PrefabFromIndex(elementPrefabIndex);
         RuntimePreviewGenerator.BackgroundColor = new(0, 0, 0, 0);
+        RuntimePreviewGenerator.PreviewDirection = new(0.85f, -0.85f, -1);
         RuntimePreviewGenerator.GenerateModelPreviewAsync(tex => {
             previewSprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             image.sprite = previewSprite;

@@ -24,4 +24,3 @@ TODO:
 - Fix bug where signals are not sent if trigger at play start
 - On select a block in edit mode -> Show details in select mode window. Get rid of tooltip
 - Make clear all undoable
-- Follow https://github.com/yasirkula/UnityRuntimePreviewGenerator to take better preview of blocks

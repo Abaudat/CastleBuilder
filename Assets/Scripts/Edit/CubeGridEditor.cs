@@ -138,18 +138,6 @@ public class CubeGridEditor : MonoBehaviour
                         break;
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.T))
-            {
-                switch (currentEditMode)
-                {
-                    case EditMode.SELECT:
-                        StartSignalEditModeForSelectedElement();
-                        break;
-                    case EditMode.FREE:
-                    case EditMode.SIGNAL:
-                        break;
-                }
-            }
             else if (Input.GetKeyDown(KeyCode.Y)) // TODO: Align with an input manager, this will be the wrong way around in other keyboard locales
             {
                 cubeGridUndoRedo.Undo();
@@ -272,8 +260,16 @@ public class CubeGridEditor : MonoBehaviour
         if (!cubeGrid.IsElementEmpty(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z))
         {
             currentSelectedCell = currentHoveredCell;
-            currentEditMode = EditMode.SELECT;
-            OnSelectEditModeStarted(new(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z));
+            if (cubeGridInstanceCreator.IsElementSignalProducer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z)
+                || cubeGridInstanceCreator.IsElementSignalConsumer(currentSelectedCell.x, currentSelectedCell.y, currentSelectedCell.z))
+            {
+                StartSignalEditModeForSelectedElement();
+            }
+            else
+            {
+                currentEditMode = EditMode.SELECT;
+                OnSelectEditModeStarted(new(currentHoveredCell.x, currentHoveredCell.y, currentHoveredCell.z));
+            }
         }
         else
         {
