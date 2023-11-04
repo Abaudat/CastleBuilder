@@ -10,6 +10,7 @@ public class CubeGrid : MonoBehaviour
     public static event EventHandler<ElementConsumerModifiedEventArgs> ElementConsumerAdded;
     public static event EventHandler<ElementConsumerModifiedEventArgs> ElementConsumerRemoved;
     public static event EventHandler<GridLoadedEventArgs> GridLoaded;
+    public static event EventHandler<GridClearedEventArgs> GridCleared;
 
     public static int HEIGHT = 5, WIDTH = 10, DEPTH = 10;
     public CubeGridElement[,,] elementGrid;
@@ -163,6 +164,7 @@ public class CubeGrid : MonoBehaviour
 
     public void ClearAll()
     {
+        var previousElementGrid = (CubeGridElement[,,]) elementGrid.Clone();
         for (int i = 0; i < WIDTH; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
@@ -173,6 +175,12 @@ public class CubeGrid : MonoBehaviour
                 }
             }
         }
+        OnGridCleared(new(previousElementGrid, elementGrid));
+    }
+
+    public void SetElementGrid(CubeGridElement[,,] newGrid)
+    {
+        elementGrid = newGrid;
         OnGridLoaded(new(elementGrid));
     }
 
@@ -199,6 +207,11 @@ public class CubeGrid : MonoBehaviour
     protected virtual void OnGridLoaded(GridLoadedEventArgs e)
     {
         GridLoaded?.Invoke(this, e);
+    }
+
+    protected virtual void OnGridCleared(GridClearedEventArgs e)
+    {
+        GridCleared?.Invoke(this, e);
     }
 
     public class CubeGridElement
@@ -332,6 +345,17 @@ public class CubeGrid : MonoBehaviour
         public GridLoadedEventArgs(CubeGridElement[,,] elementGrid)
         {
             this.elementGrid = elementGrid;
+        }
+    }
+
+    public class GridClearedEventArgs : EventArgs
+    {
+        public CubeGridElement[,,] previousElementGrid, newElementGrid;
+
+        public GridClearedEventArgs(CubeGridElement[,,] previousElementGrid, CubeGridElement[,,] newElementGrid)
+        {
+            this.previousElementGrid = previousElementGrid;
+            this.newElementGrid = newElementGrid;
         }
     }
 }

@@ -20,6 +20,7 @@ public class CubeGridInstanceManager : MonoBehaviour
         CubeGrid.ElementReplaced += ElementChangeHandler;
         CubeGrid.ElementRotated += ElementChangeHandler; // TODO: Add animation for rotation instead of recreating
         CubeGrid.GridLoaded += GridLoadedHandler;
+        CubeGrid.GridCleared += GridClearedHandler;
     }
 
     public GameObject GetInstance(int x, int y, int z)
@@ -103,6 +104,11 @@ public class CubeGridInstanceManager : MonoBehaviour
     }
 
     private void GridLoadedHandler(object sender, CubeGrid.GridLoadedEventArgs gridLoadedEventArgs)
+    {
+        RecreateAllElements();
+    }
+
+    private void GridClearedHandler(object sender, CubeGrid.GridClearedEventArgs gridClearedEventArgs)
     {
         RecreateAllElements();
     }

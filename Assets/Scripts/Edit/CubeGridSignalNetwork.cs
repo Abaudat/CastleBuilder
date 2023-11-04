@@ -10,6 +10,7 @@ public class CubeGridSignalNetwork : MonoBehaviour
     {
         cubeGridInstanceCreator = FindObjectOfType<CubeGridInstanceManager>();
         CubeGrid.GridLoaded += GridLoadedHandler;
+        CubeGrid.GridCleared += GridClearedHandler;
         CubeGridInstanceManager.GridInstantiated += GridInstantiatedHandler;
         CubeGrid.ElementConsumerAdded += ConsumerAddedHandler;
         CubeGrid.ElementConsumerRemoved += ConsumerRemovedHandler;
@@ -18,6 +19,11 @@ public class CubeGridSignalNetwork : MonoBehaviour
     private void GridLoadedHandler(object sender, CubeGrid.GridLoadedEventArgs gridLoadedEventArgs)
     {
         RecomputeSignalMap(gridLoadedEventArgs.elementGrid);
+    }
+
+    private void GridClearedHandler(object sender, CubeGrid.GridClearedEventArgs gridClearedEventArgs)
+    {
+        RecomputeSignalMap(gridClearedEventArgs.newElementGrid);
     }
 
     private void GridInstantiatedHandler(object sender, CubeGridInstanceManager.GridInstantiatedEventArgs gridInstantiatedEventArgs)

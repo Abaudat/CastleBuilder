@@ -20,6 +20,7 @@ public class CubeGridUndoRedo : MonoBehaviour
         CubeGrid.ElementRotated += ElementChangedHandler;
         CubeGrid.ElementConsumerAdded += ElementConsumerAddedHandler;
         CubeGrid.ElementConsumerRemoved += ElementConsumerRemovedHandler;
+        CubeGrid.GridCleared += GridClearedHandler;
     }
 
     public void Undo()
@@ -58,6 +59,11 @@ public class CubeGridUndoRedo : MonoBehaviour
     private void ElementConsumerRemovedHandler(object sender, CubeGrid.ElementConsumerModifiedEventArgs eventArgs)
     {
         RegisterAction(new CubeGridConsumerRemovedAction(eventArgs.x, eventArgs.y, eventArgs.z, eventArgs.consumerCoords));
+    }
+
+    private void GridClearedHandler(object sender, CubeGrid.GridClearedEventArgs gridClearedEventArgs)
+    {
+        RegisterAction(new CubeGridClearAllAction(gridClearedEventArgs.previousElementGrid, gridClearedEventArgs.newElementGrid));
     }
 
     private void RegisterAction(CubeGridAction action)
@@ -150,6 +156,27 @@ public class CubeGridUndoRedo : MonoBehaviour
         public override void Undo(CubeGrid cubeGrid)
         {
             cubeGrid.AddConsumerToProducer(consumerCoords.x, consumerCoords.y, consumerCoords.z, x, y, z);
+        }
+    }
+
+    public class CubeGridClearAllAction : CubeGridAction
+    {
+        private CubeGrid.CubeGridElement[,,] previousGrid, newGrid;
+
+        public CubeGridClearAllAction(CubeGrid.CubeGridElement[,,] previousGrid, CubeGrid.CubeGridElement[,,] newGrid)
+        {
+            this.previousGrid = previousGrid;
+            this.newGrid = newGrid;
+        }
+
+        public override void Redo(CubeGrid cubeGrid)
+        {
+            cubeGrid.SetElementGrid(newGrid);
+        }
+
+        public override void Undo(CubeGrid cubeGrid)
+        {
+            cubeGrid.SetElementGrid(previousGrid);
         }
     }
 }
