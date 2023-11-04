@@ -5,6 +5,8 @@ public class PlayerMover : MonoBehaviour
 	public Camera playerCamera;
 	public bool canMove = true;
 
+	private OptionsManager optionsManager;
+
 	[SerializeField, Range(0f, 100f)]
 	float maxSpeed = 10f;
 	[SerializeField, Range(0f, 100f)]
@@ -33,11 +35,18 @@ public class PlayerMover : MonoBehaviour
 
 	void Awake()
 	{
+		optionsManager = FindObjectOfType<OptionsManager>();
 		body = GetComponent<Rigidbody>();
 		OnValidate();
 	}
 
-	void Update()
+    private void Start()
+    {
+		sensitivityX = optionsManager.GetMouseSens();
+		sensitivityY = optionsManager.GetMouseSens();
+	}
+
+    void Update()
 	{
 		if (canMove)
         {
