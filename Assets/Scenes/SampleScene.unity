@@ -2133,7 +2133,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 475, y: 0}
+  m_AnchoredPosition: {x: 475, y: -1140}
   m_SizeDelta: {x: 950, y: 2280}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &184060539
@@ -20081,7 +20081,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1405062015}
   m_HandleRect: {fileID: 1405062014}
   m_Direction: 2
-  m_Value: 0.2364612
+  m_Value: 1
   m_Size: 0.34515443
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -28818,8 +28818,8 @@ RectTransform:
   m_Father: {fileID: 492862760}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.15484557}
-  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.6548456}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -31565,26 +31565,6 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1596013395 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2014848741599150456, guid: f49d170eff1c584419a63f1d2320450c,
-    type: 3}
-  m_PrefabInstance: {fileID: 957583845}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1596013401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1596013395}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_AspectMode: 2
-  m_AspectRatio: 5.6756153
 --- !u!1 &1596303647
 GameObject:
   m_ObjectHideFlags: 0
@@ -42213,7 +42193,6 @@ GameObject:
   - component: {fileID: 2559336920412615914}
   - component: {fileID: 2559336920412615924}
   - component: {fileID: 4067516960358395837}
-  - component: {fileID: 4067516960358395838}
   m_Layer: 5
   m_Name: Settings Button
   m_TagString: Untagged
@@ -42290,20 +42269,6 @@ MonoBehaviour:
   m_EffectColor: {r: 0.09411765, g: 0.14901961, b: 0.14509805, a: 1}
   m_EffectDistance: {x: 2, y: -2}
   m_UseGraphicAlpha: 1
---- !u!114 &4067516960358395838
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2559336920412615926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_AspectMode: 2
-  m_AspectRatio: 1
 --- !u!1001 &4320524441832740965
 PrefabInstance:
   m_ObjectHideFlags: 0
