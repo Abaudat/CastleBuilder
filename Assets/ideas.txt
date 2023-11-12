@@ -18,3 +18,5 @@ TODO:
 - Rework tutorial
 - Improve texture tiling
 - Fix bug where signals are not sent if trigger at play start
+- Hide or implement Favortite feature
+- Hide or implement level stats
