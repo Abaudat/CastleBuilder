@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
 
 public class CubeGridEditor : MonoBehaviour
 {
@@ -31,6 +33,7 @@ public class CubeGridEditor : MonoBehaviour
     private CubeGridUndoRedo cubeGridUndoRedo;
 
     private bool rightClickExitTriggered = false;
+    private bool leftClickHeld = false, rightClickHeld = false;
 
     private void Awake()
     {
@@ -52,32 +55,12 @@ public class CubeGridEditor : MonoBehaviour
         if (isEditing && !eventSystem.IsPointerOverGameObject())
         {
             ComputeHoveredCell(currentHoveredCell.y);
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (leftClickHeld)
             {
                 switch (currentEditMode)
                 {
                     case EditMode.SIGNAL:
-                        LeftClickSignalMode();
-                        break;
-                    case EditMode.FREE:
-                        LeftClickDownFreeEditMode();
-                        break;
-                    case EditMode.BLOCK:
-                        LeftClickDownBlockEditMode();
-                        break;
                     case EditMode.SELECT:
-                        // TODO: Allow selecting another
-                        break;
-                }
-            }
-            else if (Input.GetKey(KeyCode.Mouse0))
-            {
-                switch (currentEditMode)
-                {
-                    case EditMode.SIGNAL:
-                        break;
-                    case EditMode.SELECT:
-                        break;
                     case EditMode.FREE:
                         break;
                     case EditMode.BLOCK:
@@ -85,25 +68,7 @@ public class CubeGridEditor : MonoBehaviour
                         break;
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.Mouse1))
-            {
-                switch (currentEditMode)
-                {
-                    case EditMode.SIGNAL:
-                    case EditMode.SELECT:
-                        soundManager.PlayCancelClip();
-                        rightClickExitTriggered = true;
-                        SetFreeEditMode();
-                        break;
-                    case EditMode.FREE:
-                        RightClickFreeEditMode();
-                        break;
-                    case EditMode.BLOCK:
-                        RightClickBlockEditMode();
-                        break;
-                }
-            }
-            else if (Input.GetKey(KeyCode.Mouse1))
+            if (rightClickHeld)
             {
                 switch (currentEditMode)
                 {
@@ -124,46 +89,119 @@ public class CubeGridEditor : MonoBehaviour
                         break;
                 }
             }
-            else if (Input.GetKeyUp(KeyCode.Mouse1))
+        }
+    }
+
+    public void OnLeftClickInput(CallbackContext callbackContext)
+    {
+        if (isEditing && !eventSystem.IsPointerOverGameObject())
+        {
+            if (callbackContext.started)
             {
-                rightClickExitTriggered = false;
-            }
-            else if (Input.GetKeyDown(KeyCode.E))
-            {
+                leftClickHeld = true;
                 switch (currentEditMode)
                 {
-                    case EditMode.BLOCK:
-                        RotateBlockMode();
-                        break;
                     case EditMode.SIGNAL:
-                    case EditMode.SELECT:
-                        RotateSelectMode();
+                        LeftClickSignalMode();
                         break;
                     case EditMode.FREE:
+                        LeftClickDownFreeEditMode();
+                        break;
+                    case EditMode.BLOCK:
+                        LeftClickDownBlockEditMode();
+                        break;
+                    case EditMode.SELECT:
+                        // TODO: Allow selecting another
                         break;
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.Escape))
+            else if (callbackContext.canceled)
             {
+                leftClickHeld = false;
+            }
+        }
+    }
+
+    public void OnRightClickInput(CallbackContext callbackContext)
+    {
+        if (isEditing && !eventSystem.IsPointerOverGameObject())
+        {
+            if (callbackContext.started)
+            {
+                rightClickHeld = true;
                 switch (currentEditMode)
                 {
-                    case EditMode.FREE:
-                        break;
                     case EditMode.SIGNAL:
                     case EditMode.SELECT:
-                    case EditMode.BLOCK:
+                        soundManager.PlayCancelClip();
+                        rightClickExitTriggered = true;
                         SetFreeEditMode();
                         break;
+                    case EditMode.FREE:
+                        RightClickFreeEditMode();
+                        break;
+                    case EditMode.BLOCK:
+                        RightClickBlockEditMode();
+                        break;
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.Y)) // TODO: Align with an input manager, this will be the wrong way around in other keyboard locales
+            else if (callbackContext.canceled)
             {
-                cubeGridUndoRedo.Undo();
+                rightClickExitTriggered = false;
+                rightClickHeld = false;
             }
-            else if (Input.GetKeyDown(KeyCode.Z))
+        }
+    }
+
+    public void OnInteractInput(CallbackContext callbackContext)
+    {
+        if (isEditing && !eventSystem.IsPointerOverGameObject() && callbackContext.started)
+        {
+            switch (currentEditMode)
             {
-                cubeGridUndoRedo.Redo();
+                case EditMode.BLOCK:
+                    RotateBlockMode();
+                    break;
+                case EditMode.SIGNAL:
+                case EditMode.SELECT:
+                    RotateSelectMode();
+                    break;
+                case EditMode.FREE:
+                    break;
             }
+        }
+    }
+
+    public void OnEscapeInput(CallbackContext callbackContext)
+    {
+        if (isEditing && !eventSystem.IsPointerOverGameObject() && callbackContext.started)
+        {
+            switch (currentEditMode)
+            {
+                case EditMode.FREE:
+                    break;
+                case EditMode.SIGNAL:
+                case EditMode.SELECT:
+                case EditMode.BLOCK:
+                    SetFreeEditMode();
+                    break;
+            }
+        }
+    }
+
+    public void OnUndoInput(CallbackContext callbackContext)
+    {
+        if (isEditing && !eventSystem.IsPointerOverGameObject() && callbackContext.started)
+        {
+            cubeGridUndoRedo.Undo();
+        }
+    }
+
+    public void OnRedoInput(CallbackContext callbackContext)
+    {
+        if (isEditing && !eventSystem.IsPointerOverGameObject() && callbackContext.started)
+        {
+            cubeGridUndoRedo.Redo();
         }
     }
 
@@ -241,7 +279,7 @@ public class CubeGridEditor : MonoBehaviour
     private Vector3Int? GetCellAtCursor(int y)
     {
         Plane plane = new Plane(Vector3.up, Vector3.up * (y - 0.5f));
-        Ray ray = editCameraComponent.ScreenPointToRay(Input.mousePosition);
+        Ray ray = editCameraComponent.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (plane.Raycast(ray, out float enter))
         {
             Vector3 contactPoint = ray.GetPoint(enter);

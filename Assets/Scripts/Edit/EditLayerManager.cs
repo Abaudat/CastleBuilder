@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.InputSystem.InputAction;
 
 public class EditLayerManager : MonoBehaviour
 {
@@ -20,18 +21,19 @@ public class EditLayerManager : MonoBehaviour
         cubeGridEditor = FindObjectOfType<CubeGridEditor>();
     }
 
-    void Update()
+    public void OnLayerUpInput(CallbackContext callbackContext)
     {
-        if (cubeGridEditor.isEditing)
+        if (cubeGridEditor.isEditing && callbackContext.performed)
         {
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                ChangeCurrentLayerTo(currentHeight + 1);
-            }
-            else if (Input.GetKeyDown(KeyCode.F))
-            {
-                ChangeCurrentLayerTo(currentHeight - 1);
-            }
+            ChangeCurrentLayerTo(currentHeight + 1);
+        }
+    }
+
+    public void OnLayerDownInput(CallbackContext callbackContext)
+    {
+        if (cubeGridEditor.isEditing && callbackContext.performed)
+        {
+            ChangeCurrentLayerTo(currentHeight - 1);
         }
     }
 

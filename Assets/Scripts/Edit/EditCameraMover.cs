@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
 
 public class EditCameraMover : MonoBehaviour
 {
@@ -32,6 +34,10 @@ public class EditCameraMover : MonoBehaviour
     Vector2? previousMousePos;
     Vector3 rotationPivot;
 
+    private float xMoveIntent = 0;
+    private float yMoveIntent = 0;
+    private bool rotateCamera = false;
+
     private void Awake()
     {
         editLayerManager = FindObjectOfType<EditLayerManager>();
@@ -39,17 +45,15 @@ public class EditCameraMover : MonoBehaviour
 
     void Update()
     {
-        float xMoveIntent = Input.GetAxis("Horizontal");
-        float yMoveIntent = Input.GetAxis("Vertical");
-        if (Input.GetKey(KeyCode.Mouse2)) {
+        if (rotateCamera) {
             if (previousMousePos.HasValue)
             {
-                float xRotAngle = -(Input.mousePosition.y - previousMousePos.Value.y) * Time.deltaTime * cameraRotateSpeedX;
+                float xRotAngle = -(Mouse.current.position.ReadValue().y - previousMousePos.Value.y) * Time.deltaTime * cameraRotateSpeedX;
                 if (transform.eulerAngles.x + xRotAngle >= cameraRotationMin && transform.eulerAngles.x + xRotAngle <= cameraRotationMax)
                 {
                     transform.RotateAround(rotationPivot, transform.right, xRotAngle);
                 }
-                transform.RotateAround(rotationPivot, Vector3.up, (Input.mousePosition.x - previousMousePos.Value.x) * Time.deltaTime * cameraRotateSpeedY);
+                transform.RotateAround(rotationPivot, Vector3.up, (Mouse.current.position.ReadValue().x - previousMousePos.Value.x) * Time.deltaTime * cameraRotateSpeedY);
                 transform.rotation = Quaternion.Euler(
                     Mathf.Clamp((transform.eulerAngles.x + 360) % 360, cameraRotationMin, cameraRotationMax), 
                     transform.eulerAngles.y,
@@ -57,38 +61,40 @@ public class EditCameraMover : MonoBehaviour
             }
             else
             {
-                Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
+                Ray ray = GetComponent<Camera>().ScreenPointToRay(Mouse.current.position.ReadValue());
                 Plane plane = new Plane(Vector3.up, Vector3.up * editLayerManager.currentHeight);
                 plane.Raycast(ray, out float enter);
                 rotationPivot = ray.GetPoint(enter);
             }
-            previousMousePos = Input.mousePosition;
+            previousMousePos = Mouse.current.position.ReadValue();
         }
         else
         {
             previousMousePos = null;
-            if (Input.mousePosition.x + cameraMoveMarginSize > Screen.width)
+            float mediatedXMoveIntent = xMoveIntent;
+            float mediatedYMoveIntent = yMoveIntent;
+            if (Mouse.current.position.ReadValue().x + cameraMoveMarginSize > Screen.width)
             {
-                xMoveIntent = 1;
+                mediatedXMoveIntent = 1;
             }
-            else if (Input.mousePosition.x - cameraMoveMarginSize < 0)
+            else if (Mouse.current.position.ReadValue().x - cameraMoveMarginSize < 0)
             {
-                xMoveIntent = -1;
+                mediatedXMoveIntent = -1;
             }
-            if (Input.mousePosition.y + cameraMoveMarginSize > Screen.height)
+            if (Mouse.current.position.ReadValue().y + cameraMoveMarginSize > Screen.height)
             {
-                yMoveIntent = 1;
+                mediatedYMoveIntent = 1;
             }
-            else if (Input.mousePosition.y - cameraMoveMarginSize < 0)
+            else if (Mouse.current.position.ReadValue().y - cameraMoveMarginSize < 0)
             {
-                yMoveIntent = -1;
+                mediatedYMoveIntent = -1;
             }
             float newY = 0;
             if (!eventSystem.IsPointerOverGameObject())
             {
-                newY = Input.mouseScrollDelta.y * Time.deltaTime * cameraZoomSpeed;
+                newY = Mouse.current.scroll.ReadValue().y * Time.deltaTime * cameraZoomSpeed;
             }
-            Vector3 newPos = transform.position + Quaternion.Euler(0, transform.eulerAngles.y, 0) * new Vector3(xMoveIntent, 0, yMoveIntent) * cameraSpeed * Time.deltaTime;
+            Vector3 newPos = transform.position + Quaternion.Euler(0, transform.eulerAngles.y, 0) * new Vector3(mediatedXMoveIntent, 0, mediatedYMoveIntent) * cameraSpeed * Time.deltaTime;
             Vector3 clampedNewPos = new Vector3(
                 Mathf.Clamp(newPos.x, cameraRangeBottomLeft.x, cameraRangeTopRight.x),
                 Mathf.Clamp(transform.position.y - newY, cameraMinZoom, cameraMaxZoom),
@@ -96,6 +102,25 @@ public class EditCameraMover : MonoBehaviour
             transform.position = clampedNewPos;
         }
         SetWallsMaterials();
+    }
+
+    public void OnMoveInput(CallbackContext callbackContext)
+    {
+        Vector2 value = callbackContext.ReadValue<Vector2>();
+        xMoveIntent = value.x;
+        yMoveIntent = value.y;
+    }
+
+    public void OnRotateCameraInput(CallbackContext callbackContext)
+    {
+        if (callbackContext.started)
+        {
+            rotateCamera = true;
+        }
+        else if (callbackContext.canceled)
+        {
+            rotateCamera = false;
+        }
     }
 
     void SetWallsMaterials()

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using static UnityEngine.InputSystem.InputAction;
 
 public class PlayManager : MonoBehaviour
 {
@@ -25,17 +26,20 @@ public class PlayManager : MonoBehaviour
         levelBrowserManager = FindObjectOfType<LevelBrowserManager>();
     }
 
-    private void Update()
+    public void OnEscapeInput(CallbackContext callbackContext)
     {
-        if (isValidating && Input.GetKeyDown(KeyCode.Escape))
+        if (callbackContext.performed)
         {
-            StopPlaying();
-            cubeGridEditor.StartEditing();
-        }
-        if (isPlaying && Input.GetKeyDown(KeyCode.Escape))
-        {
-            StopPlaying();
-            levelBrowserManager.Browse();
+            if (isValidating)
+            {
+                StopPlaying();
+                cubeGridEditor.StartEditing();
+            }
+            if (isPlaying)
+            {
+                StopPlaying();
+                levelBrowserManager.Browse();
+            }
         }
     }
 

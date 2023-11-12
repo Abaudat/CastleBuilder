@@ -1,4 +1,7 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using System.Linq;
+using static UnityEngine.InputSystem.InputAction;
 
 public class PlayerMover : MonoBehaviour
 {
@@ -33,11 +36,20 @@ public class PlayerMover : MonoBehaviour
 	float minGroundDotProduct;
 	int stepsSinceLastGrounded, stepsSinceLastJump;
 
+	private float xMoveIntent = 0;
+	private float yMoveIntent = 0;
+	private float xCameraLookIntent = 0;
+	private float yCameraLookIntent = 0;
+
 	void Awake()
 	{
 		optionsManager = FindObjectOfType<OptionsManager>();
 		body = GetComponent<Rigidbody>();
 		OnValidate();
+		PlayerInput playerInput = FindObjectOfType<PlayerInput>();
+		playerInput.actionEvents.First(x => x.actionName.Contains("Player/Move")).AddListener(OnMoveInput);
+		playerInput.actionEvents.First(x => x.actionName.Contains("Player/Look")).AddListener(OnLookInput);
+		playerInput.actionEvents.First(x => x.actionName.Contains("Player/Jump")).AddListener(OnJumpInput);
 	}
 
     private void Start()
@@ -50,10 +62,9 @@ public class PlayerMover : MonoBehaviour
 	{
 		if (canMove)
         {
-			Vector3 playerInput = transform.forward * Input.GetAxis("Vertical") + transform.right * Input.GetAxis("Horizontal");
+			Vector3 playerInput = transform.forward * yMoveIntent + transform.right * xMoveIntent;
 			playerInput = Vector3.ClampMagnitude(playerInput, 1f);
 			desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.z) * maxSpeed;
-			desiredJump |= Input.GetButtonDown("Jump");
 			RotateCamera();
 		}
         else
@@ -63,10 +74,29 @@ public class PlayerMover : MonoBehaviour
         }
 	}
 
+	public void OnMoveInput(CallbackContext callbackContext)
+    {
+		Vector2 value = callbackContext.ReadValue<Vector2>();
+		xMoveIntent = value.x;
+		yMoveIntent = value.y;
+	}
+
+	public void OnLookInput(CallbackContext callbackContext)
+    {
+		Vector2 value = callbackContext.ReadValue<Vector2>();
+		xCameraLookIntent = value.x;
+		yCameraLookIntent = value.y;
+	}
+
+	public void OnJumpInput(CallbackContext callbackContext)
+    {
+		desiredJump |= callbackContext.started || !callbackContext.canceled;
+	}
+
 	void RotateCamera()
     {
-		float rotationY = Input.GetAxis("Mouse X") * sensitivityY;
-		float newRotX = playerCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") * sensitivityX;
+		float rotationY = xCameraLookIntent * 0.1f * sensitivityY;
+		float newRotX = playerCamera.transform.eulerAngles.x - yCameraLookIntent * 0.1f * sensitivityX;
 		if (newRotX > 80 && newRotX < 180)
         {
 			newRotX = 80;
