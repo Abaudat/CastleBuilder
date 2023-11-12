@@ -291,6 +291,7 @@ public class CubeGrid : MonoBehaviour
             rotation = (Rotation)reader.ReadByte();
             prefabIndex = reader.ReadInt32();
             int numberOfConsumers = reader.ReadInt32();
+            consumerCoords.Clear();
             for (int i = 0; i < numberOfConsumers; i++)
             {
                 consumerCoords.Add(new Vector3Int(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32()));
@@ -302,6 +303,7 @@ public class CubeGrid : MonoBehaviour
             rotation = (Rotation)reader.ReadByte();
             prefabIndex = reader.ReadByte();
             int numberOfConsumers = reader.ReadByte();
+            consumerCoords.Clear();
             for (int i = 0; i < numberOfConsumers; i++)
             {
                 consumerCoords.Add(new Vector3Int(reader.ReadSByte(), reader.ReadSByte(), reader.ReadSByte()));

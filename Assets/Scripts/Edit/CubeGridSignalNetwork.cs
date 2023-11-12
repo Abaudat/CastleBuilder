@@ -6,19 +6,20 @@ public class CubeGridSignalNetwork : MonoBehaviour
     private CubeGridInstanceManager cubeGridInstanceCreator;
     private Dictionary<Vector3Int, List<Vector3Int>> producerToConsumers = new Dictionary<Vector3Int, List<Vector3Int>>();
 
+    private CubeGrid cubeGrid;
+
+    private void Awake()
+    {
+        cubeGrid = FindObjectOfType<CubeGrid>();
+    }
+
     private void Start()
     {
         cubeGridInstanceCreator = FindObjectOfType<CubeGridInstanceManager>();
-        CubeGrid.GridLoaded += GridLoadedHandler;
         CubeGrid.GridCleared += GridClearedHandler;
         CubeGridInstanceManager.GridInstantiated += GridInstantiatedHandler;
         CubeGrid.ElementConsumerAdded += ConsumerAddedHandler;
         CubeGrid.ElementConsumerRemoved += ConsumerRemovedHandler;
-    }
-
-    private void GridLoadedHandler(object sender, CubeGrid.GridLoadedEventArgs gridLoadedEventArgs)
-    {
-        RecomputeSignalMap(gridLoadedEventArgs.elementGrid);
     }
 
     private void GridClearedHandler(object sender, CubeGrid.GridClearedEventArgs gridClearedEventArgs)
@@ -28,6 +29,7 @@ public class CubeGridSignalNetwork : MonoBehaviour
 
     private void GridInstantiatedHandler(object sender, CubeGridInstanceManager.GridInstantiatedEventArgs gridInstantiatedEventArgs)
     {
+        RecomputeSignalMap(cubeGrid.elementGrid);
         PropagateConsumersToProducerInstances(gridInstantiatedEventArgs.instancesGrid);
     }
 

@@ -118,6 +118,7 @@ public class CubeGridInstanceManager : MonoBehaviour
         if (instancesGrid[x, y, z] != null)
         {
             Destroy(instancesGrid[x, y, z]);
+            instancesGrid[x, y, z] = null;
         }
         if (PrefabHelper.PrefabFromIndex(element.prefabIndex) != null)
         {
