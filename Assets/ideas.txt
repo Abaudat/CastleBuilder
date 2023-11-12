@@ -17,6 +17,4 @@ TODO:
 - Add texture to spikes
 - Rework tutorial
 - Improve texture tiling
-- Add input manager to rebind keys
 - Fix bug where signals are not sent if trigger at play start
-- Make clear all undoable
