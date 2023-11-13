@@ -15,7 +15,6 @@ TODO:
 - Second pass on edit mode camera bounds (possibly depend on layer?)
 - Add texture to chest
 - Add texture to spikes
-- Rework tutorial
 - Improve texture tiling
 - Fix bug where signals are not sent if trigger at play start
 - Hide or implement Favortite feature
